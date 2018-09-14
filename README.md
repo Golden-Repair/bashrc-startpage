@@ -1,6 +1,17 @@
 # Start-Page
-My firefox start-page. I've removed sensitive URLs, however the general layout is the same.
+Start page made after a linux terminal with functional commands for shortcuts and searches.
 
-# Usage
-Check [/r/startpages](https://www.reddit.com/r/startpages/) to find out how to use it with your specific browser.
+Commands supported:
+Touch [name] [url] (create link in current dir),
+echo [Sentence] 
+mkdir [name]
+rmdir [name]
+rm [name]
+ls
+clear
+cd
+locate [query](duckduckgo search)
+
+Insipired by u/Jarvvski's post on the r/startpages subreddit
+
 

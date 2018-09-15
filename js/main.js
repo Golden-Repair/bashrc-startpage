@@ -4,6 +4,21 @@ const dirNameExp =  /[\w|\~]+$/
 const containsSlashCheckExp = /\//
 const isAbsolutePathExp = /^\~/
 
+const months = [
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December"
+]
+
 const commands = [
 	Command("locate","search anythin on the internet"),
 	Command("pwd","Print working directory"),
@@ -14,11 +29,17 @@ const commands = [
 	Command("touch","crate new file (link)"),
 	Command("rm","remove file (link)"),
 	Command("clear","clear output"),
-	Command("echo", "repeat something")
+	Command("echo", "repeat something"),
+	Command("time","get current date and time"),
+	Command("timer","start and stop a timer"),
+	Command("todo", "manage todo list"), // todo lol
+	Command("commands","get list of commands"),
+	Command("man", "get help for a command")
 ]
 
 var allDirectories = []
 var allFiles = []
+var timer = Timer()
 
 var curr_dir
 
@@ -118,12 +139,53 @@ function parseQuery() {
 			case "echo":
 				printMessage(args.join(' '))
 				break
+			case "time":
+				displayTime()
+				break
+			case "timer":
+				switch(args[0]){
+					case "start":
+						timer.start()
+						break
+					case "stop":
+					timer.stop()
+						break
+					case "reset":
+					timer.reset()
+						break
+					case "get":
+					printMessage(timer.getTime())
+					default:
+						break
+				}
+				break
+			case "commands":
+				for (let cmd of commands){
+					printMessage(cmd.getName())
+				}
+				break
+			case "man":
+				for (let cmd of commands){
+					if(cmd.getName() == args[0]){
+						printMessage(cmd.getHelp())
+						document.getElementById('input_field').value = ''
+						return
+					}
+				}
+				printMessage("command not found: "+args[0])
+				break
+			default:
+				printMessage("command not found: "+command)
 		}
 		document.getElementById('input_field').value = ''
 	}
 }
 
 //------------------------------console stuff-----------------------------
+function displayTime(){
+	let date = new Date()
+	printMessage("Today is the "+date.getDate()+"th of "+months[date.getMonth()]+" - The time is "+date.getHours()+" | "+date.getMinutes() +" | "+date.getSeconds()+".")
+}
 
 function printDirectory(name){
 	let a = document.createElement('a')
@@ -394,10 +456,51 @@ function Command (name, description) {
 		return this.name
 	}
 
-	self.getDescription = function(){
+	self.getHelp = function(){
 		return this.description
 	}
 
+	return self
+}
+
+function Timer(){
+	var self = {}
+	self.starttime = 0
+	self.endtime = 0
+	self.running = false
+	self.isReset = true
+
+	self.getTime = function() {
+		if(this.running){
+			return new Date().getTime() - this.starttime
+		}else {
+			if(this.isReset){
+				return 0
+			}
+			return this.endtime - this.starttime	
+		}
+		
+	}
+
+	self.start = function() {
+		this.running = true
+		this.isReset = false
+		this.starttime = new Date().getTime()
+	}
+	self.stop = function(){
+		this.running = false
+		this.endtime = new Date().getTime()
+		this.time =  this.endtime - this.starttime
+
+	}
+	self.reset = function(){
+		if(this.running){
+			this.starttime =new Date().getTime()
+		} else {
+			this.isReset=true
+		}
+		
+	}
 	return self
 }
 
@@ -456,6 +559,8 @@ function getFileWithPath(path){
 	}
 	return null
 }
+
+
 
 //--------------------------------------Saving & Restoring file system------------------------
 

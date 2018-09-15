@@ -1,3 +1,5 @@
+![Example]( Start-Page/simplescreenrecorder-2018-09-14_18.17.27.mp4)
+
 # Start-Page
 Start page made after a linux terminal with functional commands for shortcuts and searches.
 

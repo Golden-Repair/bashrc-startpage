@@ -1,4 +1,4 @@
-![Example]( https://imgur.com/gallery/HdDM3RS)
+[Example]( https://imgur.com/gallery/HdDM3RS)
 
 # Start-Page
 Start page made after a linux terminal with functional commands for shortcuts and searches.

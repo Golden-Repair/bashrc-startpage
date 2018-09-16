@@ -44,7 +44,7 @@ function timer(args){
 	}
 }
 
-function commands(){
+function commands(args){
 	for (let cmd of allCommands){
 		printMessage(cmd.getName(), "green")
 	}
@@ -75,6 +75,8 @@ function pageDesc(){
 	printMessage("The most common unix commands such as [cd|touch|mkdir|rm|rmdir] are supported!", "green")
 	printMessage("Try typing 'commands' for a list of commands or 'man [command]' for help "+
 		"with a specific command", "green")
+	printMessage("You can autocomplete directories with the 'tab' key! I will add autocomplete "+
+		"for files soon.","green")
 }
 
 function time(){

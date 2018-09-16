@@ -22,6 +22,7 @@ const allCommands = [
 	]
 
 var allDirectories = []
+var currentSubDirectoryNames = []
 var allFiles = []
 var myTimer = Timer()
 
@@ -41,6 +42,7 @@ function parseQuery() {
 	if(typeof fn === 'function'){
 		fn(args)
 	} else {
+		console.log(typeof fn)
 		printMessage("command not found: "+command, "red")
 	}
 	document.getElementById('input_field').value = ''
@@ -63,6 +65,7 @@ function init() {
 		printMessage("Hey there! - If you're new to the page try 'commands' for a "+
 			"list of commands!", "green")
 	}
+	currentSubDirectoryNames = curr_dir.getSubdirNames()
 	updatewd()
 }
 

@@ -21,6 +21,7 @@ function enterDir(path){
 				if(dir.getPath() == path){
 					curr_dir = dir
 					updatewd()
+					currentSubDirectoryNames = curr_dir.getSubdirNames()
 					clearConsoleOut()
 					return true
 				}
@@ -36,6 +37,7 @@ function enterDir(path){
 				if(dir.getPath() == newPath){
 					curr_dir = dir
 					updatewd()
+					currentSubDirectoryNames = curr_dir.getSubdirNames()
 					clearConsoleOut()
 					return true
 				}
@@ -52,6 +54,7 @@ function homeDir(){
 		if(dir.getPath() == '~'){
 			curr_dir = dir
 			updatewd()
+			currentSubDirectoryNames = curr_dir.getSubdirNames()
 			clearConsoleOut()		
 		}
 	}

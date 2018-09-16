@@ -3,12 +3,9 @@
 		<title>Terminal</title>
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="style/style.css" />
-		<script type="text/javascript" src="js/classes.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>	
-		<script type="text/javascript" src="js/commands/consoleoutcommands.js"></script>
-		<script type="text/javascript" src="js/commands/navigationcommands.js"></script>
-		<script type="text/javascript" src="js/commands/filesystemcommands.js"></script>
-		<script type="text/javascript" src="js/commands/utilitycommands.js"></script>
+		
+
+
 		
 		
 	</head>
@@ -29,7 +26,27 @@
 			</div>
 		</div>
 	</body>
+	
+	<script src="http://code.jquery.com/jquery-latest.min.js "></script>
+	<script src="js/tabComplete/tabcomplete.js"></script>
+	
+	<script type="text/javascript" src="js/classes.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>	
+		<script type="text/javascript" src="js/commands/consoleoutcommands.js"></script>
+		<script type="text/javascript" src="js/commands/navigationcommands.js"></script>
+		<script type="text/javascript" src="js/commands/filesystemcommands.js"></script>
+		<script type="text/javascript" src="js/commands/utilitycommands.js"></script>
 	<script type="text/javascript">
 		window.onload = init()
 		</script>
+	<script>
+	$(function() {
+		var input = $("#input_field");
+		// var matches = $("#matches");
+		
+		// Enable tabcomplete.
+		input.tabcomplete();
+		input.focus();
+	});
+	</script>
 </html>

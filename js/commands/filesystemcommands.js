@@ -84,6 +84,8 @@ function mkdirHelper(path){
 		if(pathIsAvailable(path)){
 			allDirectories.push(Directory(path))
 			storeConfigToLocalStorage()
+			currentSubDirectoryNames = curr_dir.getSubdirNames()
+			console.log(currentSubDirectoryNames)
 			return true	
 		}
 		
@@ -106,6 +108,7 @@ function rmdirHelper(path){
 			if(allDirectories[i].getPath() == path){
 				allDirectories.splice(i,1)
 				storeConfigToLocalStorage()
+				currentSubDirectoryNames = curr_dir.getSubdirNames()
 				return 2
 			}
 		}

@@ -2,6 +2,8 @@
 
 # Start-Page
 Start page made after a linux terminal with functional commands for shortcuts and searches.
+It should work with all modern browsers, however I'm mainly using firefox and can't guarantee that everything
+looks nice on other browsers.
 
 Directories are supposed to serve as bookmark categories and 'files' as bookmarks/links.
 

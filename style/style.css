@@ -97,29 +97,33 @@ h3 {
 }
 
 .cyan {
-	color: #9aedfe;
+	color: #88c0d0;
 	padding: 0;
 }
 
 .blue {
-	color: #57c7ff;
+	color: #7191b1;
 	padding: 0;
 }
 
 .green {
 	font-weight: bold;
 	padding: 0;
-	color: #5af78e;
+	color: #a3be8c;
 }
 
 .pink {
 	padding: 0;
-	color: #ff6ac1;
+	color: #b48ead;
 }
 
 .red {
 	padding: 0;
-	color: #ff5c57;
+	color: #bf616a;
+}
+.white {
+	padding: 0;
+	color: #e5e9f0;
 }
 
 form {

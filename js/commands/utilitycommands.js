@@ -92,3 +92,11 @@ function locate(args){
 		printMessage("Please enter a valid search query", "red")
 	}
 }
+
+function getALlLinkNames(){
+	let names = []
+	for (let l of allFiles){
+		names.push(l.getName())
+	}
+	return names
+}

@@ -16,6 +16,8 @@ I added an option to autocomplete directories with tab in much the same style in
 
 the "ls" command can list contents of an absolute path or a relative path in the subdirectory of the current location
 
+You can open a link simply by tiping its name as a command. Currently you can type the name of any link in any directory. I might have to restrict link names to names that are not used as a command in order to prevent interference.
+
 Commands supported:
 Touch [name] [url] (create link in current dir)
 
@@ -42,7 +44,6 @@ in local storage the page will just create an empty home directory
 
 I plan on giving some color options for links although I like having files/directories on a clearly distinct color.
 
-In the future i will add the possibilities to type the name of a file/link that is stored as a command to open the link stored in that file
 
 ## Planned commands
 notes - quick way of adding notes/todos and removing them. Not sure how I plan on displaying it for now.

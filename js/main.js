@@ -36,11 +36,18 @@ function parseQuery() {
 	let query = document.getElementById('input_field').value
 	let command = query.split(' ')[0]
 	let args = query.split(' ').slice(1)
-
 	clearConsoleOut()
 	var fn = window[command]
+	//Check if input is a command
 	if(typeof fn === 'function'){
 		fn(args)
+	//Else check if input is a bookmark
+	} else if(getALlLinkNames().indexOf(command)>=0) {
+		for (let file of allFiles){
+			if(file.getName() == command){
+				window.open(file.getUrl())
+			}
+		}
 	} else {
 		console.log(typeof fn)
 		printMessage("command not found: "+command, "red")

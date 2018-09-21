@@ -53,6 +53,15 @@ function parseQuery() {
 		printMessage("command not found: "+command, "red")
 	}
 	document.getElementById('input_field').value = ''
+	let linkBox = document.getElementById('console_out')
+	if(linkBox.childNodes.length==0){
+		console.log('empty')
+		linkBox.classList.add('hide')
+		linkBox.classList.remove('show')
+	} else {
+		linkBox.classList.add('show')
+		linkBox.classList.remove('hide')
+	}
 }
 
 function updatewd(){
@@ -74,6 +83,10 @@ function init() {
 	}
 	currentSubDirectoryNames = curr_dir.getSubdirNames()
 	updatewd()
+	let commandLine = document.getElementById('container')
+	commandLine.classList.add('show')
+	commandLine.classList.remove('hidden')
+
 }
 
 //--------------------Saving & Restoring file system from localstorage------------------------

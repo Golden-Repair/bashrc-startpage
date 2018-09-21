@@ -14,13 +14,64 @@
 
 }
 
+@keyframes openConsole {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes hideLinks {
+  0% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0);
+  }
+}
+@keyframes showLinks {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.hidden{
+	transform: scaleY(0);
+}
+
+.hide{
+	animation: 0.3s ease-out 0s 1 hideLinks;
+	transform: scaleY(0);
+}
+.show{
+	animation: 0.3s ease-out 0s 1 showLinks;
+	transform: scaleY(1);
+}
+.simple-linear {
+  background: linear-gradient(blue, pink);
+}
+
 
 html, body{
 	margin: 0;
 	padding: 0;
-	background-color: #141516;
 	color: #FFFFFF;
-	font-size: 14px;
+	font-size: 1em;
+}
+
+#main{
+	top:0px;
+	position: fixed;
+	z-index: 1000
+	left:0px;
+	background: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
+	width: 100%;
+	height: 100%;
 }
 
 * {
@@ -44,10 +95,11 @@ html, body{
 	-webkit-box-shadow: 1px 1px 20px 0px #000;
 	-moz-box-shadow: 1px 1px 20px 0px #000;
 	box-shadow: 1px 1px 20px 0px #000;
-	background-color: #282a36;
+	background-color: #2f343f;
 	margin: 4px;
 	padding: 8px;
-	border: 5px solid #282a36;
+	border: 5px solid #2f343;
+	height: auto;
 }
 
 
@@ -65,8 +117,9 @@ html, body{
 	-webkit-box-flex: 1;
 	margin: 4px;
 	padding: 8px 8px 8px 8px;
-	background-color: #282a36;
-	border: 5px solid #282a36;
+	background-color: #2f343f;
+	border: 5px solid #2f343f;
+	overflow: hidden;
 }
 
 .linksbox h3 {
@@ -90,10 +143,11 @@ html, body{
 }
 
 h3 {
-	font-size: 14px;
+	font-size: 1em;
 	padding-bottom: 0;
 	margin-bottom: 0;
 	margin-top: 0;
+
 }
 
 .cyan {
@@ -137,5 +191,5 @@ input 	{
 	border: none;
 	color: #FFF;
 	width: 70%;
-	font-size: 14px;
+	font-size: 1em;
 }

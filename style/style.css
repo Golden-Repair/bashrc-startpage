@@ -15,9 +15,11 @@
 }
 
 
+
 html, body{
 	margin: 0;
 	padding: 0;
+	/*2f343f*/
 	background-color: #141516;
 	color: #FFFFFF;
 	font-size: 14px;

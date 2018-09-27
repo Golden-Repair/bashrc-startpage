@@ -86,6 +86,7 @@ function init() {
 	let commandLine = document.getElementById('container')
 	commandLine.classList.add('show')
 	commandLine.classList.remove('hidden')
+	_init()
 
 }
 

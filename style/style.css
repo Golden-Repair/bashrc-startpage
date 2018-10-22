@@ -194,3 +194,59 @@ input 	{
 	width: 70%;
 	font-size: 1em;
 }
+
+
+
+.guy {
+  font-family: Helvetica, Arial, Verdana, sans-serif;
+  font-weight: bold;
+  letter-spacing: -1px;
+  font-size: 80px;
+	color:#000f;
+}
+
+
+#tab{
+	color:#000f;
+	font-family: Helvetica, Arial, Verdana, sans-serif;
+  font-weight: bold;
+  letter-spacing: -1px;
+  font-size: 80px;
+}
+
+div .anim{
+  display: inline-block;
+}
+
+.tf_container{
+  bottom: 10px !important;
+}
+
+
+
+#tab{
+  animation-timing-function: linear;
+  animation: table-flip 2s infinite;
+  position: relative;
+}
+
+.arm{
+  animation-timing-function: linear;
+  animation: arm-rotate 2s infinite;
+  position: relative;
+}
+
+@keyframes table-flip {
+  0% {  left: 0px; top: 0em; transform: rotate(-180deg);  }
+  24% {  top: -2em;  }
+  60% { left: 2.5em; top: 0em; transform: rotate(0deg); }
+  80% { left: 2.5em; top: 0em; transform: rotate(0deg); }
+  100% {  left: 0px; top: 0em; transform: rotate(-180deg);  }
+}
+
+@keyframes arm-rotate {
+  0% { top: 0.2em; transform: rotate(90deg); }
+  20% { top: 0em;transform: rotate(0deg); }
+  50% { top: 0em;transform: rotate(0deg); }
+  100% { top: 0.2em;transform: rotate(90deg); }
+}

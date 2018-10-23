@@ -1,5 +1,5 @@
 var currAnim = 'fractalPlant'
-var drawSpeed = 10
+var growingSpeed = 200
 var point = 0
 
 //Drawing setup, add canvas to the html page
@@ -87,8 +87,10 @@ function _init() {
     var canvas  = document.getElementById("canvas");
     var bufferCvs = document.createElement('canvas');
 
-    var BACKGROUND_COLOR      = '#090a0b',
-        PEN_COLOR             = '#fff'
+    var BACKGROUND_COLOR      = '#2f343f',
+        PEN_COLOR             = '#A1A1B6',
+        GREEN = '#2E5A28'
+        BROWN = '#593528',
         PARTICLE_RADIUS       = 1,
         DATA_SIZE = 1000
 
@@ -157,12 +159,13 @@ function _init() {
     tree1 = recursivelyProduceLSystem('x',4,fractalPlantRules)
     tree2 = recursivelyProduceLSystem('x',5,fractalPlantRules)
     tree3 = recursivelyProduceLSystem('x',6,fractalPlantRules)
-    tree4 = recursivelyProduceLSystem('x',7,fractalPlantRules)
+    tree4 = recursivelyProduceLSystem('x',8,fractalPlantRules)
     //Convert the generated String into a drawable form (Points with start and end coordinates to draw a line from and to)
-    createPointsForCurve(200,600,3,25,90,tree1Coords,tree1)
-    createPointsForCurve(400,600,3,25,90,tree2Coords,tree2)
-    createPointsForCurve(600,600,3,25,90,tree3Coords,tree3)
-    createPointsForCurve(800,600,3,25,90,tree4Coords,tree4)
+    //x,y,length,angle
+    createPointsForCurve(200,800,3,20,90,tree1Coords,tree1)
+    createPointsForCurve(400,800,3,25,90,tree2Coords,tree2)
+    createPointsForCurve(600,800,3,30,90,tree3Coords,tree3)
+    createPointsForCurve(800,800,1,30,90,tree4Coords,tree4)
 
 context.save();
 context.fillStyle = BACKGROUND_COLOR;
@@ -189,13 +192,12 @@ context.restore();
 
 
         //--------------------------Fractal Plant-----------------------
-
           for(let l = 0;l<tree4Counter;l++){
             pointToDraw4 = tree4Coords[l];
             bufferCtx.moveTo(pointToDraw4[0], pointToDraw4[1]);
             bufferCtx.lineTo(pointToDraw4[2],pointToDraw4[3]);
         }
-        tree4Counter +=drawSpeed
+        tree4Counter +=tree4Coords.length/growingSpeed
         if(tree4Counter>=tree4Coords.length){
           tree4Counter=0
         }
@@ -205,8 +207,8 @@ context.restore();
             bufferCtx.moveTo(pointToDraw3[0], pointToDraw3[1]);
             bufferCtx.lineTo(pointToDraw3[2],pointToDraw3[3]);
         }
-        tree3Counter +=drawSpeed
-        if(tree3Counter>=tree4Coords.length){
+        tree3Counter +=tree3Coords.length/growingSpeed
+        if(tree3Counter>=tree3Coords.length){
           tree3Counter=0
         }
 
@@ -216,25 +218,23 @@ context.restore();
             bufferCtx.moveTo(pointToDraw2[0], pointToDraw2[1]);
             bufferCtx.lineTo(pointToDraw2[2],pointToDraw2[3]);
         }
-        tree2Counter +=drawSpeed
-        if(tree2Counter>=tree4Coords.length){
+        tree2Counter +=tree2Coords.length/growingSpeed
+        if(tree2Counter>=tree2Coords.length){
           tree2Counter=0
         }
 
-
+        
         for(let l = 0;l<tree1Counter;l++){
             pointToDraw1 = tree1Coords[l];
             bufferCtx.moveTo(pointToDraw1[0], pointToDraw1[1]);
             bufferCtx.lineTo(pointToDraw1[2],pointToDraw1[3]);
         }
-        tree1Counter +=drawSpeed
-        if(tree1Counter>=tree4Coords.length){
+        tree1Counter +=tree1Coords.length/growingSpeed
+        if(tree1Counter>=tree1Coords.length){
           tree1Counter=0
         }
 
-
-
-
+        
         context.fillStyle = BACKGROUND_COLOR;
         context.fillRect(0, 0, screenWidth, screenHeight);
 

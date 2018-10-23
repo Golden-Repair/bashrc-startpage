@@ -5,17 +5,27 @@
 		<link rel="stylesheet" href="style/style.css" />
 
 
-
-
-
 	</head>
 	<body>
 		<div id="main">
 		<div id="container" class="hidden">
 			<div id="header">
-				<h3 style="display: inline;"><span class="blue"> ~ </span> <span class="pink">❯</span> <span class="green" id="location">~/</span></h3>
+				<h3 id="tilde"><span class="blue"> ~ </span> <span class="pink">❯</span> <span class="green" id="location">~/</span></h3>
 				<form action="javascript:parseQuery()" autofocus="autofocus">
-					<input class="white" id="input_field" type="text" autofocus="autofocus" autocomplete="off" name="q" \>
+					<div id="tf_container" class="inactive">
+							<div class="anim guy white">
+							(<div class="anim arm white">╯</div>°□°）<div class="anim arm white">╯</div>
+						</div>
+						<div class="anim white" id="tab">┻━┻</div>
+							<div class="anim guy white">
+						</div>
+					</div>
+
+
+					<input class="white" id="input_field" type="text" autofocus="autofocus" autocomplete="off" name="q" >
+
+				</input>
+
 				</form>
 
 			</div>
@@ -26,14 +36,7 @@
 
 
 		</div>
-		<div class="tf_container">
-				<div class="anim guy">
-		    (<div class="anim arm">╯</div>°□°）<div class="anim arm">╯</div>
-		  </div>
-		  <div class="anim" id="tab">┻━┻</div>
-		    <div class="anim guy">
-		  </div>
-		</div>
+
 	</body>
 
 	<script src="http://code.jquery.com/jquery-latest.min.js "></script>

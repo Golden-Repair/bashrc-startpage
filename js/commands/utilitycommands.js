@@ -21,6 +21,21 @@ function pwd(){
 	printMessage(curr_dir.getPath(), "green")
 }
 
+function flip(){
+	guy = document.getElementById('tf_container')
+	guy.classList.remove('inactive')
+	guy.classList.remove('floatOut')
+	guy.classList.add('floatIn')
+	setTimeout(function() {
+		guy.classList.remove('floatIn')
+		guy.classList.add('floatOut')
+		setTimeout(function() {
+			guy.classList.add('inactive')
+		},300)
+
+	},1250)
+}
+
 function timer(args){
 	if(!args[0]){
 		printMessage("timer: missing operand", "red")

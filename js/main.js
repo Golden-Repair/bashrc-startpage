@@ -18,7 +18,7 @@ const allCommands = [
 	Command("todo", "manage todo list","not done yet"), // todo lol
 	Command("commands","get list of commands", "commands"),
 	Command("man", "get help for a command", "man [comand]"),
-	Command("pageDesc","description of the startpage", "pageDesc")
+	Command("pageDesc","description of the startpage", "pageDesc"),
 	Command("flip",'Flip that flippin table',"flip")
 	]
 

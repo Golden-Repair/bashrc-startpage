@@ -93,7 +93,7 @@ function init() {
 	}
 	let newSpan = document.createElement('span')
 	newSpan.className ='blue'
-	let uName = 'anon'
+	let uName = document.createTextNode('anon'+'@bashrc')
 	if (user != ''){
 		uName = document.createTextNode(user+'@bashrc')
 	}

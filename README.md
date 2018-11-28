@@ -7,10 +7,10 @@ looks nice on other browsers.
 
 Directories are supposed to serve as bookmark categories and 'files' as bookmarks/links.
 
-for navigation commands both absolute and relative paths are supported, only paths like 
+for navigation commands both absolute and relative paths are supported, only paths like
 "cd ../dir/" are not supported atm.
 
-Same goes for mkdir, rmdir, touch, and rm. 
+Same goes for mkdir, rmdir, touch, and rm.
 
 I added an option to autocomplete directories with tab in much the same style in which it is done in some unix systems (cycle through suggestions with tab). This means that you can't select links with tab anymore. This won't be a problem since I will add the autocomplete also for files, so you can open a link by typing its first letters and completing it with tab. I think this is more natural anyways in a terminal environment.
 
@@ -21,7 +21,7 @@ You can open a link simply by tiping its name as a command. Currently you can ty
 Commands supported:
 Touch [name] [url] (create link in current dir)
 
-echo [Sentence] 
+echo [Sentence]
 
 mkdir [name]
 
@@ -37,7 +37,9 @@ cd | cd .. | cd [path]
 
 locate [query](duckduckgo search)
 
-Links and directories are saved to the local storage now, if there is no config found 
+Fancy system information with 'fetch' and set your username with 'useradd'
+
+Links and directories are saved to the local storage now, if there is no config found
 in local storage the page will just create an empty home directory
 
 # Planned additions

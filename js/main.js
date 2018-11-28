@@ -19,15 +19,19 @@ const allCommands = [
 	Command("commands","get list of commands", "commands"),
 	Command("man", "get help for a command", "man [comand]"),
 	Command("pageDesc","description of the startpage", "pageDesc"),
-	Command("flip",'Flip that flippin table',"flip")
+	Command("flip",'Flip that flippin table',"flip"),
+	Command('useradd','Set your username for display :)'),
+	Command('fetch','system information')
 	]
 
 var allDirectories = []
 var currentSubDirectoryNames = []
 var allFiles = []
 var myTimer = Timer()
+var user = ''
+var uptimeStart = 0
 
-var curr_dir
+var curr_dir = undefined
 
 
 /*
@@ -70,24 +74,38 @@ function updatewd(){
 }
 
 function init() {
+	uptimeStart = new Date().getTime()
 	loadConfigFromLocalStorage()
 	for (let d of allDirectories){
 		if(d.getPath() == '~'){
 			curr_dir = d
 		}
 	}
-	if (curr_dir == undefined ){
+
+	if (curr_dir === undefined){
 		curr_dir = Directory('~')
 		allDirectories.push(curr_dir)
-		printMessage("Hey there! - If you're new to the page try 'commands' for a "+
-			"list of commands!", "green")
+		updatewd()
+		printMessage("Hey there! - If you're new to the page try 'commands' for a list of commands!", "green")
+		let linkBox = document.getElementById('console_out')
+		linkBox.classList.add('show')
+		linkBox.classList.remove('hide')
 	}
+	let newSpan = document.createElement('span')
+	newSpan.className ='blue'
+	let uName = 'anon'
+	if (user != ''){
+		uName = document.createTextNode(user+'@bashrc')
+	}
+	newSpan.appendChild(uName)
+	document.getElementById('tilde').insertBefore(newSpan, document.getElementById('tilde').children[0]);
 	currentSubDirectoryNames = curr_dir.getSubdirNames()
-	updatewd()
+
 	let commandLine = document.getElementById('container')
 	commandLine.classList.add('show')
 	commandLine.classList.remove('hidden')
 	// _init()
+
 
 }
 
@@ -95,6 +113,10 @@ function init() {
 
 function loadConfigFromLocalStorage(){
 	let dirs = JSON.parse(window.localStorage.getItem("directories"))
+	let storedUser = JSON.parse(window.localStorage.getItem("user"))
+	if(storedUser){
+		user = storedUser
+	}
 	if(!dirs){
 		return
 	}
@@ -110,4 +132,5 @@ function loadConfigFromLocalStorage(){
 function storeConfigToLocalStorage(){
 	window.localStorage.setItem("directories", JSON.stringify(allDirectories))
 	window.localStorage.setItem("files", JSON.stringify(allFiles))
+	window.localStorage.setItem('user', JSON.stringify(user))
 }

@@ -17,6 +17,15 @@ function echo(args){
 	printMessage(args.join(' '))
 }
 
+function useradd(args){
+	if(!args[0]){
+		printMessage('Please specify username','green')
+		return
+	}
+	user = args[0]
+	storeConfigToLocalStorage()
+}
+
 function pwd(){
 	printMessage(curr_dir.getPath(), "green")
 }
@@ -61,7 +70,7 @@ function timer(args){
 
 function commands(args){
 	for (let cmd of allCommands){
-		printMessage(cmd.getName(), "green")
+		printMessage(cmd.getName(), "cyan")
 	}
 }
 

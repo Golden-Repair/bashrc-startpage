@@ -192,33 +192,58 @@ h3 {
 }
 
 .cyan {
-	color: #88c0d0;
+	color: #8FBCBB;
+	padding: 0;
+}
+
+.black {
+	color: #2E3440;
+	padding: 0;
+}
+
+.dark {
+	color: #434C5E;
 	padding: 0;
 }
 
 .blue {
-	color: #7191b1;
+	color: #81A1C1;
 	padding: 0;
 }
 
-.green {
-	font-weight: bold;
+.darkblue {
+	color: #5E81AC;
 	padding: 0;
-	color: #a3be8c;
+}
+
+.orange {
+	padding: 0;
+	color: #D08770;
+}
+
+.yellow {
+	padding: 0;
+	color: #EBCB8B;
+}
+
+.green {
+	padding: 0;
+	color: #A3BE8C;
 }
 
 .pink {
 	padding: 0;
-	color: #b48ead;
+	color: #B48EAD;
 }
 
 .red {
 	padding: 0;
-	color: #bf616a;
+	color: #BF616A;
 }
+
 .white {
 	padding: 0;
-	color: #e5e9f0;
+	color: #D8DEE9;
 }
 
 form {

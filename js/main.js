@@ -1,6 +1,7 @@
 const separator = '/'
 const dirNameExp =  /[\w|\~]+$/
 const containsSlashCheckExp = /\//
+const PROMPT = ">";
 
 const allCommands = [
 	Command("locate","search anythin on the internet", "locate [query]"),
@@ -70,10 +71,13 @@ function parseQuery() {
 }
 
 function updatewd(){
-	document.getElementById('location').textContent = curr_dir.getPath()
+	$('#wd').text(curr_dir.getPath());
 }
 
 function init() {
+
+
+
 	uptimeStart = new Date().getTime()
 	loadConfigFromLocalStorage()
 	for (let d of allDirectories){
@@ -88,23 +92,12 @@ function init() {
 		updatewd()
 		printMessage("Hey there! - If you're new to the page try 'commands' for a list of commands!", "green")
 		let linkBox = document.getElementById('console_out')
-		linkBox.classList.add('show')
-		linkBox.classList.remove('hide')
-	}
-	let newSpan = document.createElement('span')
-	newSpan.className ='blue'
-	let uName = document.createTextNode('anon'+'@bashrc')
-	if (user != ''){
-		uName = document.createTextNode(user+'@bashrc')
-	}
-	newSpan.appendChild(uName)
-	document.getElementById('tilde').insertBefore(newSpan, document.getElementById('tilde').children[0]);
-	currentSubDirectoryNames = curr_dir.getSubdirNames()
 
-	let commandLine = document.getElementById('container')
-	commandLine.classList.add('show')
-	commandLine.classList.remove('hidden')
-	// _init()
+	}
+
+	currentSubDirectoryNames = curr_dir.getSubdirNames()
+	updatewd();
+	$("#prompt").text(PROMPT);
 
 
 }

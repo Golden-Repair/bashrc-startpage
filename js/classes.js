@@ -41,6 +41,55 @@ function Directory (path) {
 	return self
 }
 
+function WindowManager (rootElementId) {
+	var self = {};
+	self.rootElementId = rootElementId;
+	self.numRows = 1;
+	self.numCols= 1;
+	self.children = {};
+
+	self.spawnChild = function(type) {
+		var activeId = document.activeElement.id;
+
+		// no active window yet, so just spawn one fullscreen
+		if (!activeId) {
+			console.log('no active element')
+			var new_window = type.template.content.cloneNode(true);
+			$("#"+self.rootElementId).append(new_window);
+			// set its id to 0
+			$(".window").attr("id",0);
+			$("#0").css("grid-row","1 / span 4").css("grid-column","1 / span 4")
+			return;
+		} else {
+			var active = $("#"+activeId);
+			
+			//Get the top level container of the active terminal
+			active = active.parent().parent().parent().parent().parent();
+		}
+		// Element to split is more wide than high
+		if(active.css("grid-column") > active.css("grid-row")) {
+			active.css("grid-column",active.css("grid-column")/2);
+		} else {
+			active.css("grid-row",active.css("grid-row")/2);
+
+		}
+		$("#"+self.rootElementId).append(type.template.content.cloneNode(true));
+	};
+
+	self.destroyChild = function(id) {
+
+	}
+
+	return self;
+}
+
+function Terminal () {
+	var self = {};
+	self.template = document.getElementById('terminal-template');
+
+	return self;
+}
+
 function Link (path, url) {
 	var self = {}
 	self.url = url

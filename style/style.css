@@ -1,3 +1,13 @@
+/*
+TABLE OF CONTENT:
+1. FONTS & COLORS
+1. GENERAL (HTML, BODY, general styling)
+2. CONSOLE
+	2.1 PROMPT
+	2.2 CONSOLE OUT 
+*/
+
+/*--------------- FONTS & COLORS --------------*/
 @font-face {
 	font-family: 'fira';
 	src:  url('FiraCode-Retina.ttf') format('ttf'),
@@ -14,303 +24,127 @@
 
 }
 
-@keyframes openConsole {
-  0% {
-    transform: scaleY(0);
+:root {
+	--cyan:#8FBCBB;
+	--dark:#1a1e21;
+	--blue: #81A1C1;
+	--darkblue:#5E81AC;
+	--orange: #D08770;
+	--yellow:#EBCB8B;
+	--green:#A3BE8C;
+	--pink:#B48EAD;
+	--red:#BF616A;
+	--white:#D8DEE9;
+
   }
-  100% {
-    transform: scaleY(1);
-  }
-}
+/*--------------- GENERAL --------------*/
 
-
-@keyframes hideLinks {
-  0% {
-    transform: scaleY(1);
-  }
-  100% {
-    transform: scaleY(0);
-  }
-}
-
-@keyframes moveGuyIn {
-  0% {
-    transform: translateX(-50px);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-@keyframes moveGuyOut {
-  0% {
-    transform: translateX(0px);
-  }
-  100% {
-    transform: translateX(-50px);
-  }
-}
-
-@keyframes showLinks {
-  0% {
-    transform: scaleY(0);
-  }
-  100% {
-    transform: scaleY(1);
-  }
-}
-
-.floatIn{
-	animation: 0.3s ease-out 0s 1 moveGuyIn;
-}
-
-.floatOut{
-	animation: 0.3s ease-out 0s 1 moveGuyOut;
-}
-
-.hidden{
-	transform: scaleY(0);
-}
-.inactive{
-	display:none !important;
-}
-
-.hide{
-	animation: 0.3s ease-out 0s 1 hideLinks;
-	transform: scaleY(0);
-}
-.show{
-	animation: 0.3s ease-out 0s 1 showLinks;
-	transform: scaleY(1);
-}
-.simple-linear {
-  background: linear-gradient(blue, pink);
-}
-
-
-
-html, body{
-	margin: 0;
-	padding: 0;
-	/*2f343f*/
-	background-color: #141516;
-	color: #FFFFFF;
-	font-size: 1em;
-}
-
-#main{
-	top:0px;
-	position: fixed;
-	z-index: 1000
-	left:0px;
-	background: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
-	width: 100%;
+html, body, .main-screen {
 	height: 100%;
+	max-height:100vw;
+}
+.main-screen {
+	padding:3rem; 
+	display:grid;
+	grid-template-columns : 4;
+	grid-template-rows : 4;
+	grid-gap:3rem;
 }
 
-* {
+
+
+body{
+	color: #FFFFFF;
+	font-size: 20px;
 	font-family: 'fira';
 	font-weight: lighter;
+	background: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
 }
 
-#container {
-	position: absolute;
-	padding: 0 20px 0 20px;
-	top: 35%;
-	left: 0;
-	right: 0;
-	margin-left: auto;
-	margin-right: auto;
-	width: 700px;
-	height: auto;
+.window {
 }
 
-#header {
-	-webkit-box-shadow: 1px 1px 20px 0px #000;
-	-moz-box-shadow: 1px 1px 20px 0px #000;
-	box-shadow: 1px 1px 20px 0px #000;
-	background-color: #2f343f;
-	margin: 4px;
-	padding: 8px;
-	border: 5px solid #2f343;
-	height: auto;
+/*--------------- CONSOLE --------------*/
+.console-wrapper {
+	background-color: var(--dark);
+	opacity: 0.95;
 }
-
-#tilde{
-	background-color: #2f343f;
-	display: inline;
-	z-index:50;
+.floating {
+	height:600px;
+	width:800px;
+	margin:auto;
+	margin-top: 10%;
 
 }
 
-
-#links {
-	display: -moz-box;
-	display: -webkit-box;
-	width: 100%;
+.fullscreen {
+	height:100%;
+	width:100%;
 }
 
-.linksbox {
-	-webkit-box-shadow: 1px 1px 20px 0px #000;
-	-moz-box-shadow: 1px 1px 20px 0px #000;
-	box-shadow: 1px 1px 20px 0px #000;
-	-moz-box-flex: 1;
-	-webkit-box-flex: 1;
-	margin: 4px;
-	padding: 8px 8px 8px 8px;
-	background-color: #2f343f;
-	border: 5px solid #2f343f;
-	overflow: hidden;
+#console {
+
+	height: 100%;
+	padding:5rem;
 }
 
-.linksbox h3 {
-	padding-bottom: 5px;
+/*--------------- PROMPT --------------*/
+.prompt-line {
+	margin-bottom:1rem;
 }
 
-.linksbox a{
-	display: block;
-	text-decoration: none;
-	font-weight: bold;
+#prompt {
+	color: var(--green);
 }
 
-.linksbox a.cyan:hover {
-	color: #4babdb;
-	text-decoration: underline;
+#wd {
+	color: var(--cyan);
+}
+.prompt-wrapper {
+float: left;
+margin-right: 1rem;
+
+}
+.form-wrapper {
+ width: auto;
+ overflow: hidden;
 }
 
-.linksbox a.red:hover {
-	color: #ff5c57;
-	text-decoration: underline;
-}
-
-h3 {
+input 	{
+	width:100%;
+	outline: none !important;
+	background: none;
+	border: none;
+	color: #FFF;
 	font-size: 1em;
-	padding-bottom: 0;
-	margin-bottom: 0;
-	margin-top: 0;
-
 }
 
-.cyan {
-	color: #8FBCBB;
-	padding: 0;
-}
-
-.black {
-	color: #2E3440;
-	padding: 0;
-}
-
-.dark {
-	color: #434C5E;
-	padding: 0;
-}
-
-.blue {
-	color: #81A1C1;
-	padding: 0;
-}
-
-.darkblue {
-	color: #5E81AC;
-	padding: 0;
-}
-
-.orange {
-	padding: 0;
-	color: #D08770;
-}
-
-.yellow {
-	padding: 0;
-	color: #EBCB8B;
-}
-
-.green {
-	padding: 0;
-	color: #A3BE8C;
-}
-
-.pink {
-	padding: 0;
-	color: #B48EAD;
-}
-
-.red {
-	padding: 0;
-	color: #BF616A;
-}
-
-.white {
-	padding: 0;
-	color: #D8DEE9;
-}
 
 form {
 	display: inline;
 }
 
-input 	{
-	display: inline;
-	background: none;
-	display: inline;
-	border: none;
-	color: #FFF;
-	width: 70%;
-	font-size: 1em;
+/*--------------- CONSOLE OUT --------------*/
+
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.console-out::-webkit-scrollbar {
+	display: none;
+  }
+  
+  /* Hide scrollbar for IE and Edge */
+  .console-out {
+	-ms-overflow-style: none;
+  }
+
+.console-out {
+
+	max-height: 100%;
+	overflow:scroll;
 }
 
+.console-out a {
+	display: block;
+	color: white;
 
-
-.guy {
-  font-family: Helvetica, Arial, Verdana, sans-serif;
-  font-weight: bold;
-  letter-spacing: -1px;
-  font-size: 1em;
-}
-
-
-#tab{
-	font-family: Helvetica, Arial, Verdana, sans-serif;
-  font-weight: bold;
-  letter-spacing: -1px;
-  font-size: 1em;
-}
-
-div .anim{
-  display: inline-block;
-}
-
-#tf_container{
-  bottom: 10px !important;
-	display: inline-block;
-}
-
-
-
-#tab{
-  animation-timing-function: linear;
-  animation: table-flip 2s infinite;
-  position: relative;
-}
-
-.arm{
-  animation-timing-function: linear;
-  animation: arm-rotate 2s infinite;
-  position: relative;
-}
-
-@keyframes table-flip {
-  0% {  left: 0px; top: 0em; transform: rotate(-180deg);  }
-  24% {  top: -2em;  }
-  60% { left: 2.5em; top: 0em; transform: rotate(0deg); }
-  80% { left: 2.5em; top: 0em; transform: rotate(0deg); }
-  100% {  left: 0px; top: 0em; transform: rotate(-180deg);  }
-}
-
-@keyframes arm-rotate {
-  0% { top: 0.2em; transform: rotate(90deg); }
-  20% { top: 0em;transform: rotate(0deg); }
-  50% { top: 0em;transform: rotate(0deg); }
-  100% { top: 0.2em;transform: rotate(90deg); }
 }

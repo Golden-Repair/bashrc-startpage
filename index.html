@@ -1,58 +1,68 @@
 <!DOCTYPE HTML>
-	<head>
-		<title>Terminal</title>
-		<meta charset="UTF-8">
-		<link rel="stylesheet" href="style/style.css" />
+
+<head>
+	<title>Terminal</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="style/style.css" />
 
 
-	</head>
-	<body>
-		<div id="main">
-		<div id="container" class="hidden">
-			<div id="header">
-				<h3 id="tilde"> <span class="pink">  ❯</span> <span class="green" id="location">~/</span></h3>
-				<form action="javascript:parseQuery()" autofocus="autofocus">
-					<div id="tf_container" class="inactive">
-							<div class="anim guy white">
-							(<div class="anim arm white">╯</div>°□°）<div class="anim arm white">╯</div>
-						</div>
-						<div class="anim white" id="tab">┻━┻</div>
-							<div class="anim guy white">
-						</div>
-					</div>
 
+</head>
 
-					<input class="white" id="input_field" type="text" autofocus="autofocus" autocomplete="off" name="q" >
+<template id="terminal-template">
+	<div class="console-wrapper window">
+		<div id="console">
 
-				</input>
-
-				</form>
-
+			<!-- Prompt & user input -->
+			<div class="prompt-line">
+				<div class="prompt-wrapper">
+					<span id="prompt"></span>
+					<span id="wd"></span>
+				</div>
+				<div class="form-wrapper">
+					<form action="javascript:parseQuery()" autofocus="autofocus">
+						<input class="white" id="input_field" type="text" autofocus="autofocus" autocomplete="off"
+							name="q">
+						</input>
+					</form>
+				</div>
 			</div>
-			<div id="links">
-				<div id ="console_out" class="linksbox hidden"></div
-			</div>
-		</div>
 
+			<!-- Terminal Output -->
+			<div id="console_out" class="console-out"></div>
 
 		</div>
+	</div>
+</template>
 
-	</body>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="js/tabComplete/tabcomplete.js"></script>
+<body>
+	<div id="screen" class="main-screen">
 
-	<script type="text/javascript" src="js/classes.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>
-		<script type="text/javascript" src="js/commands/consoleoutcommands.js"></script>
-		<script type="text/javascript" src="js/commands/navigationcommands.js"></script>
-		<script type="text/javascript" src="js/commands/filesystemcommands.js"></script>
-		<script type="text/javascript" src="js/commands/utilitycommands.js"></script>
-	<script type="text/javascript">
-		window.onload = init()
-		</script>
-	<script>
-	$(function() {
+	</div>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<script src="js/tabComplete/tabcomplete.js"></script>
+
+<script type="text/javascript" src="js/classes.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript" src="js/commands/consoleoutcommands.js"></script>
+<script type="text/javascript" src="js/commands/navigationcommands.js"></script>
+<script type="text/javascript" src="js/commands/filesystemcommands.js"></script>
+<script type="text/javascript" src="js/commands/utilitycommands.js"></script>
+<script type="text/javascript">
+
+	var wm = WindowManager("screen");
+	wm.spawnChild(Terminal());
+
+
+	window.onload = init();
+	$(function () {
 		var input = $("#input_field");
 		// var matches = $("#matches");
 
@@ -60,5 +70,7 @@
 		input.tabcomplete();
 		input.focus();
 	});
-	</script>
+</script>
+
+
 </html>

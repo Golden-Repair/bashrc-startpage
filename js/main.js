@@ -1,129 +1,51 @@
-const separator = '/'
-const dirNameExp =  /[\w|\~]+$/
-const containsSlashCheckExp = /\//
-const PROMPT = ">";
-
-const allCommands = [
-	Command("locate","search anythin on the internet", "locate [query]"),
-	Command("pwd","Print working directory",'pwd'),
-	Command("ls","List contents of working directory","ls"),
-	Command("cd","change directory","cd [..| |path]"),
-	Command("mkdir","create new directory", "mkdir [path]"),
-	Command("rmdir","remove directory", "rm dir [path]"),
-	Command("touch","crate new file (link)", "touch [patch]"),
-	Command("rm","remove file (link)","rm [path]"),
-	Command("clear","clear output","clear"),
-	Command("echo", "repeat something","echo [phrase]"),
-	Command("time","get current date and time","time"),
-	Command("timer","start and stop a timer", "timer [start|stop|reset|get]"),
-	Command("todo", "manage todo list","not done yet"), // todo lol
-	Command("commands","get list of commands", "commands"),
-	Command("man", "get help for a command", "man [comand]"),
-	Command("pageDesc","description of the startpage", "pageDesc"),
-	Command("flip",'Flip that flippin table',"flip"),
-	Command('useradd','Set your username for display :)'),
-	Command('fetch','system information')
-	]
-
-var allDirectories = []
-var currentSubDirectoryNames = []
-var allFiles = []
-var myTimer = Timer()
-var user = ''
-var uptimeStart = 0
-
-var curr_dir = undefined
+ResultTypes = Object.freeze({ "directory": 1, "link": 2, "error": 3});
 
 
 /*
 *Parse user input query from command line and execute command
 */
-function parseQuery() {
-	let query = document.getElementById('input_field').value
-	let command = query.split(' ')[0]
-	let args = query.split(' ').slice(1)
-	clearConsoleOut()
-	var fn = window[command]
-	//Check if input is a command
-	if(typeof fn === 'function'){
-		fn(args)
-	//Else check if input is a bookmark
-	} else if(getALlLinkNames().indexOf(command)>=0) {
-		for (let file of allFiles){
-			if(file.getName() == command){
-				window.open(file.getUrl())
-			}
-		}
-	} else {
-		console.log(typeof fn)
-		printMessage("command not found: "+command, "red")
-	}
-	document.getElementById('input_field').value = ''
-	let linkBox = document.getElementById('console_out')
-	if(linkBox.childNodes.length==0){
-		console.log('empty')
-		linkBox.classList.add('hide')
-		linkBox.classList.remove('show')
-	} else {
-		linkBox.classList.add('show')
-		linkBox.classList.remove('hide')
-	}
-}
+function parseQuery(id) {
+	var dom_object = $(`#${id}`);
 
-function updatewd(){
-	$('#wd').text(curr_dir.getPath());
-}
-
-function init() {
-
-
-
-	uptimeStart = new Date().getTime()
-	loadConfigFromLocalStorage()
-	for (let d of allDirectories){
-		if(d.getPath() == '~'){
-			curr_dir = d
-		}
-	}
-
-	if (curr_dir === undefined){
-		curr_dir = Directory('~')
-		allDirectories.push(curr_dir)
-		updatewd()
-		printMessage("Hey there! - If you're new to the page try 'commands' for a list of commands!", "green")
-		let linkBox = document.getElementById('console_out')
-
-	}
-
-	currentSubDirectoryNames = curr_dir.getSubdirNames()
-	updatewd();
-	$("#prompt").text(PROMPT);
-
+	var query = dom_object.find('#input_field').value
+	var command = query.split(' ')[0]
+	var args = query.split(' ').slice(1)
+	
+	return {"query":command, "args": args};
 
 }
 
-//--------------------Saving & Restoring file system from localstorage------------------------
+function pageDesc(){
+	printMessage("This startpage is intended to look & act like a unix terminal.", "green")
+	printMessage("You can create and manage directories and files - dorectories "+
+		"act as bookmark folders and files as bookmark links", "green")
+	printMessage("The most common unix commands such as [cd|touch|mkdir|rm|rmdir] are supported!", "green")
+	printMessage("Try typing 'commands' for a list of commands or 'man [command]' for help "+
+		"with a specific command", "green")
+	printMessage("You can autocomplete directories with the 'tab' key! I will add autocomplete "+
+		"for files soon.","green")
+}
 
-function loadConfigFromLocalStorage(){
-	let dirs = JSON.parse(window.localStorage.getItem("directories"))
-	let storedUser = JSON.parse(window.localStorage.getItem("user"))
-	if(storedUser){
-		user = storedUser
-	}
-	if(!dirs){
+
+function timer(args){
+	if(!args[0]){
+		printMessage("timer: missing operand", "red")
+		printMessage("Try 'man timer' for more information", "red")
 		return
 	}
-	for (let d of dirs){
-		allDirectories.push(Directory(d.path))
+	switch(args[0]){
+		case "start":
+			myTimer.start()
+			break
+		case "stop":
+		myTimer.stop()
+			break
+		case "reset":
+		myTimer.reset()
+			break
+		case "get":
+		printMessage(myTimer.getTime())
+		default:
+			break
 	}
-	let files = JSON.parse(window.localStorage.getItem("files"))
-	for (let f of files){
-		allFiles.push(Link(f.path,f.url))
-	}
-}
-
-function storeConfigToLocalStorage(){
-	window.localStorage.setItem("directories", JSON.stringify(allDirectories))
-	window.localStorage.setItem("files", JSON.stringify(allFiles))
-	window.localStorage.setItem('user', JSON.stringify(user))
 }

@@ -6,40 +6,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	<link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/fantasque-sans-mono" type="text/css" />
 	<link rel="stylesheet" href="style/style.css" />
-
-
-
+	
 </head>
 
-<template id="terminal-template">
-	<div class="console-wrapper window">
-		<div id="console">
-
-			<!-- Prompt & user input -->
-			<div class="prompt-line">
-				<div class="prompt-wrapper">
-					<span id="prompt"></span>
-					<span id="wd"></span>
-				</div>
-				<div class="form-wrapper">
-					<form action="javascript:parseQuery()" autofocus="autofocus">
-						<input class="white" id="input_field" type="text" autofocus="autofocus" autocomplete="off"
-							name="q">
-						</input>
-					</form>
-				</div>
-			</div>
-
-			<!-- Terminal Output -->
-			<div id="console_out" class="console-out"></div>
-
-		</div>
-	</div>
-</template>
 
 
-<body>
+
+<body id="body">
 	<div id="screen" class="main-screen">
 
 	</div>
@@ -49,28 +24,49 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 <script src="js/tabComplete/tabcomplete.js"></script>
 
-<script type="text/javascript" src="js/classes.js"></script>
 <script type="text/javascript" src="js/main.js"></script>
-<script type="text/javascript" src="js/commands/consoleoutcommands.js"></script>
-<script type="text/javascript" src="js/commands/navigationcommands.js"></script>
-<script type="text/javascript" src="js/commands/filesystemcommands.js"></script>
-<script type="text/javascript" src="js/commands/utilitycommands.js"></script>
-<script type="text/javascript">
 
-	var wm = WindowManager("screen");
-	wm.spawnChild(Terminal());
+<script type="text/javascript" src="js/windowManager.js"></script>
+<script type="text/javascript" src="js/terminal.js"></script>
+<script type="text/javascript" src="js/filesystem.js"></script>
+<script type="text/javascript" src="js/commandhandler.js"></script>
+<script type="text/javascript" src="js/os.js"></script>
 
 
-	window.onload = init();
-	$(function () {
-		var input = $("#input_field");
-		// var matches = $("#matches");
+<script>	
+	var fileSystem = new FileSystem();
+	var commandHandler = new CommandHandler();
+	var os = new OperatingSystem(fileSystem, commandHandler);
 
-		// Enable tabcomplete.
-		input.tabcomplete();
-		input.focus();
-	});
+	var de = new DesktopManager(os, new FloatingWindowManager(400,400), "screen");
+	os.assignDE(de);
+	
+$(document).ready(function() {
+	de.addWindow(WindowTypes.terminal);
+});
 </script>
 
+<div class="console-wrapper window" id="terminal-template" style="display:none;">
+		<div id="console">
+	
+			<!-- Prompt & user input -->
+			<div class="prompt-line">
+				<div class="prompt-wrapper">
+					<span id="prompt"></span>
+					<span id="wd"></span>
+				</div>
+				<div class="form-wrapper">
+					<form action="javascript:parseQuery();"autofocus="autofocus">
+						<input class="white" id="input_field" type="text" autofocus="autofocus" autocomplete="off" name="q">
+						</input>
+					</form>
+				</div>
+			</div>
+	
+			<!-- Terminal Output -->
+			<div id="console_out" class="console-out"></div>
+	
+		</div>
+	</div>
 
 </html>

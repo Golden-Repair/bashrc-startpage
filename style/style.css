@@ -8,21 +8,6 @@ TABLE OF CONTENT:
 */
 
 /*--------------- FONTS & COLORS --------------*/
-@font-face {
-	font-family: 'fira';
-	src:  url('FiraCode-Retina.ttf') format('ttf'),
-	local('FiraCode-Retina');
-	font-style: normal;
-	font-weight: normal;
-}
-@font-face {
-	font-family: 'fira';
-	src:  url('FiraCode-Light.ttf') format('ttf'),
-	local('FiraCode-Light');
-	font-style: normal;
-	font-weight: lighter;
-
-}
 
 :root {
 	--cyan:#8FBCBB;
@@ -45,24 +30,17 @@ html, body, .main-screen {
 }
 .main-screen {
 	padding:3rem; 
-	display:grid;
-	grid-template-columns : 4;
-	grid-template-rows : 4;
-	grid-gap:3rem;
 }
-
-
 
 body{
 	color: #FFFFFF;
 	font-size: 20px;
-	font-family: 'fira';
-	font-weight: lighter;
+	font-family: 'FantasqueSansMonoRegular';
+	font-weight: normal;
+	font-style: normal; 
 	background: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
 }
 
-.window {
-}
 
 /*--------------- CONSOLE --------------*/
 .console-wrapper {
@@ -132,9 +110,10 @@ form {
 	display: none;
   }
   
-  /* Hide scrollbar for IE and Edge */
+  /* Hide scrollbar for IE and Edge and firefox */
   .console-out {
 	-ms-overflow-style: none;
+	scrollbar-width: none;
   }
 
 .console-out {

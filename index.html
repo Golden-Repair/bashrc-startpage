@@ -24,6 +24,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 <script src="js/tabComplete/tabcomplete.js"></script>
 
+<script type="text/javascript" src="js/responseobject.js"></script>
 <script type="text/javascript" src="js/main.js"></script>
 
 <script type="text/javascript" src="js/windowManager.js"></script>
@@ -42,7 +43,7 @@
 	os.assignDE(de);
 	
 $(document).ready(function() {
-	de.addWindow(WindowTypes.terminal);
+	os.launchProgram(Programs.terminal);
 });
 </script>
 

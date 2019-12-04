@@ -1,14 +1,15 @@
-WindowTypes = Object.freeze({ "terminal": 1 });
-WindowStates = Object.freeze({ "floating": 1, "tiled": 2, "fullscreen": 3 });
-
-
-class Window {
+class Program {
 	constructor(id, template) {
 		this.id = id;
 		this.template = template;
 	}
 
-	init() { }
+	init() {}
+
+    setDomObject(dom_object) {
+        this.dom_object = dom_object;
+
+    }
 
 	instantiateTemplate() {
 		return this.template.clone();
@@ -23,56 +24,54 @@ class Window {
 class DesktopManager {
 
     constructor(os, windowManager, rootElementId) {
-        this.windows = {};
+        this.programs = {};
         this.currentId = 0;
         this.wm = windowManager;
         this.os = os;
         this.rootElementId = rootElementId;
         this.wm.setScreenProperties(rootElementId);
+        this.name = this.get_browser_info().name;
     }
 
-    createWindowFromType(type, id) {
-        switch (type) {
-            case WindowTypes.terminal:
-                return new Terminal(id, this.os);
-        }
+    getName() {
+        return this.name;
     }
 
-    addWindow(windowType) {
+    getScreenRes() {
+        return [$(window).width(), $(window).height()];
+    }
 
-        var window = this.createWindowFromType(windowType, this.currentId);
-        this.windows[this.currentId++] = window;
+    addProgram(program) {
+
+        this.programs[this.currentId++] = program;
 
         // get the actual html
-        var new_dom = window.instantiateTemplate();
+        var new_dom = program.instantiateTemplate();
         // set id and display
         new_dom.css('display', 'block');
         new_dom.attr("id", window.id);
-        if (windowType == WindowTypes.terminal){
-            new_dom.find("form").attr('id',`${window.id}form`);
-            
-        }
+
+        program.setDomObject(new_dom);
 
         // append new html block to DOM
         this.getRootElement().append(new_dom);
 
-        window.init();
         // tell wm to update display
-        this.wm.update(this.getWindows());
+        this.wm.update(this.getPrograms());
     }
 
-    removeWindow(id) {
+    removeProgram(id) {
         delete this.windows[id];
-        this.wm.update(this.getWindows());
+        this.wm.update(this.getPrograms());
     }
 
-    getWindow(id) {
+    getProgram(id) {
         console.log('searching for id: '+id)
-        return this.windows[id];
+        return this.programs[id];
     }
 
-    getWindows() {
-        var w = this.windows;
+    getPrograms() {
+        var w = this.programs;
         var values = Object.keys(w).map(function (key) {
                 return w[key];
         });
@@ -82,6 +81,24 @@ class DesktopManager {
     getRootElement() {
         return $("#" + this.rootElementId);
     }
+
+    get_browser_info(){
+		var ua=navigator.userAgent,tem,M=ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+		if(/trident/i.test(M[1])){
+			tem=/\brv[ :]+(\d+)/g.exec(ua) || [];
+			return {name:'IE ',version:(tem[1]||'')};
+			}
+		if(M[1]==='Chrome'){
+			tem=ua.match(/\bOPR\/(\d+)/)
+			if(tem!=null)   {return {name:'Opera', version:tem[1]};}
+			}
+		M=M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+		if((tem=ua.match(/version\/(\d+)/i))!=null) {M.splice(1,1,tem[1]);}
+		return {
+		  name: M[0],
+		  version: M[1]
+		};
+	 }
 }
 
 class WindowManager {
@@ -104,24 +121,21 @@ class FloatingWindowManager extends WindowManager {
 
     }
 
-    update(allWindows) {
+    update(programs) {
 
-        allWindows.forEach(window => {
-            this.setDOMProperties(window, this.default_width, this.default_height);
+        programs.forEach(program => {
+            this.setDOMProperties(program, this.default_width, this.default_height);
         });
     }
 
 
-    setDOMProperties(window, width, height) {
-        var dom_obj = $(`#${window.id}`);
+    setDOMProperties(program, width, height) {
+        var dom_obj = $(`#${program.id}`);
         dom_obj.css("width", `${width}`);
         dom_obj.css("height", `${height}`);
         dom_obj.css("margin", `auto`);
         dom_obj.css("margin-top", `10%`);
-
-
     }
-
 
 }
 

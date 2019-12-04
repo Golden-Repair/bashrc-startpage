@@ -60,6 +60,7 @@ body{
 	width:100%;
 }
 
+
 #console {
 
 	height: 100%;
@@ -125,5 +126,17 @@ form {
 .console-out a {
 	display: block;
 	color: white;
+}
 
+.console-out .error {
+	color: var(--red);
+}
+.console-out .success {
+	color: var(--green);
+}
+.console-out .link {
+	color: var(--blue);
+}
+.console-out .directory {
+	color: var(--cyan);
 }

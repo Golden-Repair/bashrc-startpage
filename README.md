@@ -1,6 +1,16 @@
 [Example]( https://imgur.com/gallery/HdDM3RS)
 
 # Start-Page
+
+
+## IMPORTANT: Work in Progress ->
+
+I'm currently re-writing most of the code so the current state is kind of broken :)
+
+The Idea is to act like an os with a desktop environment, a file manager and open programs that are then arranged on the page trough a Window Manager (currently tiling or floating). This way all the commands have to be re-organized a bit.
+
+## Funcionality
+
 Start page made after a linux terminal with functional commands for shortcuts and searches.
 It should work with all modern browsers, however I'm mainly using firefox and can't guarantee that everything
 looks nice on other browsers.

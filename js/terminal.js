@@ -5,7 +5,6 @@ class Terminal extends Program {
 		this.PROMPT = ">";
 		this.os = os;
 
-
 		this.currentSubDirectoryNames = []
 		//this.myTimer = Timer()
 		this.user = ''
@@ -13,8 +12,6 @@ class Terminal extends Program {
 
 		this.curr_dir = undefined
 	}
-
-
 
 	/*
 	*Parse user input query from command line and execute command
@@ -27,6 +24,12 @@ class Terminal extends Program {
 
 		//TODO: make a command handler for the terminal that makes calls to the file system
 
+		var found_command = Object.getOwnPropertyNames(Terminal.prototype).filter(val => val == command);
+		
+		if (found_command) {
+			command = this[found_command];
+			return command(this, args);
+		}
 		var result = this.os.systemCall(this.curr_dir, command, args);
 		this.clearConsoleOut();
 		this.printMessage(result.messages, result.resultType);
@@ -71,18 +74,16 @@ class Terminal extends Program {
 		this.dom_object.find("#prompt").text(this.PROMPT);
 	}
 
-	printDirectory(name) {
-		let a = document.createElement('a')
-		a.href = `javascript:enterDir("${name}")`
-		let linkText = document.createTextNode(name)
-		a.appendChild(linkText)
-
-		document.getElementById('console_out').appendChild(a)
-	}
-
 	printMessage(msgs, type) {
+		if (typeof msgs == 'string') {
+			msgs = [msgs];
+		}
 		msgs.forEach(msg => {
 			let a = document.createElement('a')
+			// also allow printing colored messages
+			if (typeof type == 'string') {
+				a.setAttribute('color', `var(--${type})`)
+			}
 			console.log(type)
 			switch (type) {
 				case ResultTypes.error:
@@ -90,6 +91,12 @@ class Terminal extends Program {
 					break;
 				case ResultTypes.success:
 					a.className = "success";
+					break;
+				case ResultTypes.link:
+					a.className = 'link';
+					break;
+				case ResultTypes.directory:
+					a.className = 'directory'
 					break;
 				default:
 					break;
@@ -100,44 +107,34 @@ class Terminal extends Program {
 		});
 	}
 
-	printLink(path) {
-		let a = document.createElement('a')
-		a.className = "cyan"
-		a.target = "blank"
-		a.href = getFileWithPath(path).getUrl()
-		let linkText = document.createTextNode(getFileWithPath(path).getName())
-		a.appendChild(linkText)
-		document.getElementById('console_out').appendChild(a)
-	}
-
-	clearConsoleOut() {
+	clear(terminal, args) {
 		let out = document.getElementById("console_out")
 		while (out.firstChild) {
 			out.removeChild(out.firstChild);
 		}
 	}
 
-	fetch() {
-		this.printMessage(this.os.getUser() + '@bashrc', 'red')
-		this.printMessage('OS: ' + this.os.getName(), 'orange')
-		this.printMessage(`Kernel: ${this.os.getKernel()}`, 'yellow')
-		let time = new Date().getTime() - this.uptimeStart;
+	fetch(terminal, args) {
+		terminal.printMessage(`${terminal.os.getUser()}@bashrc`, 'red')
+		terminal.printMessage(`OS: ${terminal.os.getName()}`, 'orange')
+		terminal.printMessage(`Kernel: ${terminal.os.getKernel()}`, 'yellow')
+		let time = new Date().getTime() - terminal.uptimeStart;
 		let seconds = Math.floor(time / 1000)
 		let minutes = Math.floor(seconds / 60)
-		this.printMessage('Uptime: ' + (minutes) + ' minutes', 'green')
-		var res = this.os.getDe().getScreenRes();
-		this.printMessage('Resolution: ' + res[0] + 'x' + res[1], 'pink')
-		this.printMessage('DE: ' + this.os.getDe().getName(), 'darkblue')
+		terminal.printMessage(`Uptime:  ${minutes} minutes`, 'green')
+		var res = terminal.os.getDe().getScreenRes();
+		terminal.printMessage(`Resolution: ${res[0]} x ${res[1]}`, 'pink')
+		terminal.printMessage(`DE: ${terminal.os.getDe().getName()}`, 'darkblue')
 	}
 
 
 
-	pwd() {
-		this.printMessage(this.curr_dir.getPath(), "green")
+	pwd(terminal, args) {
+		terminal.printMessage(terminal.curr_dir.getPath(), ResultTypes.success)
 	}
 
-	echo(args) {
-		this.printMessage(args.join(' '))
+	echo(terminal, args) {
+		terminal.printMessage(args.join(' '), ResultTypes.success)
 	}
 
 	locate(args) {
@@ -145,29 +142,6 @@ class Terminal extends Program {
 			window.open("https://duckduckgo.com/" + args.join(' '));
 		} else {
 			this.printMessage("Please enter a valid search query", "red")
-		}
-	}
-
-	timer(args) {
-		if (!args[0]) {
-			printMessage("timer: missing operand", "red")
-			printMessage("Try 'man timer' for more information", "red")
-			return
-		}
-		switch (args[0]) {
-			case "start":
-				myTimer.start()
-				break
-			case "stop":
-				myTimer.stop()
-				break
-			case "reset":
-				myTimer.reset()
-				break
-			case "get":
-				printMessage(myTimer.getTime())
-			default:
-				break
 		}
 	}
 

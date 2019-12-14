@@ -18,9 +18,8 @@ class FileSystem {
 
 		} else {
 			//create root dir and push it into stack
-			this.root = newDirectory('~');
+			this.root = newDirectory('~', null, true);
 		}
-
 	}
 
 	getRoot() {
@@ -31,40 +30,78 @@ class FileSystem {
 		return path.split(this.separator);
 	}
 
+	biuldPathString(path_list) {
+		return path_list.join(this.separator);
+	}
+
 	getDir(path) {
-		var split =this.buildPathList(path).splice(1);
+		console.log(`getDir: ${path}`)
+		//if path is a string, convert to list of names
+		if (!Array.isArray(path)) {
+			path = this.buildPathList(path)
+		}
+		//if path starts from root, remove root from path
+		path = path.filter(p => p != this.getRoot().getName());
+
+		//if path length is empty now it can ony be root
+		if (path.length == 0) {
+			return this.root;
+		}
+		// if path has length 1 it can only be a direct child of root
+		if (path.length == 1) {
+			console.log('searching '+path[0]+' in '+ this.getRoot().getName())
+			return this.root.getChild(path[0]);
+		}
+		console.log('path: '+path)
+		// else start at root and traverse tree until only name is left in path
 		var node = this.root;
-		while (node && split.length > 1) {
-			node = node.getChild(split[0]);
-			split = split.splice(1);
+		console.log('searching '+path[0]+' in '+ node.getName())
+
+		while (path.length > 1) {
+			next = next.getRelative(path[0]);
+			path = path.splice(1);
 		}
-		return node.getChild(split[0]);
+		console.log('searching '+path[0]+' in '+ node.getName())
+		return node.getChild(path[0]);
 	}
 
-	//--------------------Saving & Restoring file system from localstorage------------------------
+	getFile(path) {
+		console.log(`getFile: ${path}`)
+		//if path is a string, convert to list of names
+		if (!Array.isArray(path)) {
+			path = this.buildPathList(path)
+		}
+		//if path starts from root, remove root from path
+		path = path.filter(p => p != this.getRoot().getName());
 
-	loadConfigFromLocalStorage() {
-		let dirs = JSON.parse(window.localStorage.getItem("directories"))
+		//if path length is empty now it can ony be root
+		if (path.length == 0) {
+			return `rm: cannot remove '${path}': Is a directory`;
+		}
+		// if path has length 1 it can only be a direct child of root
+		if (path.length == 1) {
+			console.log('searching '+path[0]+' in '+ this.getRoot().getName())
+			return this.root.getFile(path[0]);
+		}
+		console.log('path: '+path)
+		// else start at root and traverse tree until only name is left in path
+		var node = this.root;
+		console.log('searching '+path[0]+' in '+ node.getName())
 
-		if (!dirs) {
-			return -1;
+		while (path.length > 1) {
+			next = next.getRelative(path[0]);
+			path = path.splice(1);
 		}
-		for (let d of dirs) {
-			this.allDirectories.push(Directory(d.path))
-		}
-		let files = JSON.parse(window.localStorage.getItem("files"))
-		for (let f of files) {
-			this.allFiles.push(Link(f.path, f.url))
-		}
-		return 1;
+		console.log('searching '+path[0]+' in '+ node.getName())
+		return node.getFile(path[0]);
 	}
 
-	storeConfigToLocalStorage() {
-		window.localStorage.setItem("directories", JSON.stringify(allDirectories))
-		window.localStorage.setItem("files", JSON.stringify(allFiles))
-	}
+
+// ------------------------- BASIC FILE SYSTEM COMMANDS ------------------------
+
 
 	ls(dir, args) {
+		console.log(`ls: ${dir} - ${args}`)
 		var node;
 		// no arguments, print content of 'dir'
 		if (args[0] == undefined) {
@@ -83,186 +120,95 @@ class FileSystem {
 		return node.getChildrenNames().concat(node.getFileNames());
 	}
 
-	cd(args) {
+	cd(dir, args) {
+		console.log('cd')
 		switch (args[0]) {
 			case "..":
-				upDir()
-				break
+				return dir.getParent()
 			case undefined:
-				homeDir()
-				break
+				return this.getRoot()
 			default:
-				if (!enterDir(args[0])) {
-					printMessage("no such file or directory: " + args[0], "red")
-				}
-				break
-		}
-	}
-
-	enterDir(path) {
-		if (isAbsolutePathExp.test(path)) {
-			if (dirExists(path)) {
-				for (let dir of allDirectories) {
-					if (dir.getPath() == path) {
-						curr_dir = dir
-						updatewd()
-						currentSubDirectoryNames = curr_dir.getSubdirNames()
-						clearConsoleOut()
-						return true
-					}
-				}
-			} else {
-				return false
-			}
-
-		} else {
-			let newPath = curr_dir.getPath() + separator + path
-			if (dirExists(newPath)) {
-				for (let dir of allDirectories) {
-					if (dir.getPath() == newPath) {
-						curr_dir = dir
-						updatewd()
-						currentSubDirectoryNames = curr_dir.getSubdirNames()
-						clearConsoleOut()
-						return true
-					}
-				}
-			} else {
-				return false
-			}
-		}
-
-	}
-
-	homeDir() {
-		for (let dir of allDirectories) {
-			if (dir.getPath() == '~') {
-				curr_dir = dir
-				updatewd()
-				currentSubDirectoryNames = curr_dir.getSubdirNames()
-				clearConsoleOut()
-			}
-		}
-	}
-
-	upDir() {
-		//Make sure we are not on the home directory
-		if (!(curr_dir.getPath() == '~')) {
-			let newPath = curr_dir.getPath().split('/')
-			newPath.pop()
-			newPath = newPath.join('/')
-			enterDir(newPath)
+				console.log(`${dir.getPath()}${this.separator}${args}`)
+				return this.getDir(`${dir.getPath()}${this.separator}${args}`);
 		}
 	}
 
 	mkdir(dir, args) {
+		console.log(`mkdir: ${dir} - ${args}`)
 		if (!args[0]) {
-			console.log("mkdir: missing operand")
 			return "mkdir: missing operand";
 		}
 		if (dir.getChildrenNames().indexOf(args[0]) == -1) {
 			dir.appendChild(newDirectory(args[0], dir));
-			console.log('success')
 		} else {
-			console.log(`mkdir: cannot create directory '${args[0]}': File exists`)
 			return `mkdir: cannot create directory '${args[0]}': File exists`;
 		}
 	}
 
-	rmdir(curr_dir, args) {
+	rmdir(dir, args) {
 		if (!args[0]) {
-			return ("rmdir: missing operand", ResultType.error)
+			return 'rmdir: missing operand';
 		}
-		let result = rmdirHelper(args[0])
-		//Dir does not exist
-		if (result == 0) {
-			return ("failed to remove '" + args[0] + "': No such file or directory", ResultType.error)
-			//Dir is not empty
-		} else if (result == 1) {
-			return ("failed to remove '" + args[0] + "': Directory not empty", ResultType.error)
+		var node = this.getDir(this.buildPathList(dir.getPath()+this.separator+args[0]));
+		if(!node.isEmpty()) {
+			return `failed to remove ${node.getName()}: Directory not empty`
 		}
+		node.getParent().removeChild(node.getName());
 	}
 
-	touch(curr_dir, args) {
+	touch(dir, args) {
+		if (!args[0] || !args[1]) {
+			return "touch: missing file operand"
+		}
+		var path = args[0].slice(0,args[0].lastIndexOf(this.separator));
+		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
+		if (!this.isAbsolutePathExp.test(path)) {
+			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
+		}
+		
+		console.log('path compl: '+path);
+		console.log('name: '+name);
+		var node = this.getDir(this.buildPathList(path));
+		node.addFile(newFile(name, args[1], node));
+
+	}
+
+	rm(dir, args) {
 		if (!args[0]) {
-			return("touch: missing file operand", ResultType.error)
+			return "rm: missing operand"
 		}
-		if (!this.touchHelper(args[0], args[1])) {
-			return ("cannot create file '" + args[0] + "': File exists", ResultType.error);
+		var path = args[0];
+		if (!this.isAbsolutePathExp.test(args[0])) {
+			path = dir.getPath()+ this.separator + path;
 		}
-	}
 
-	rm(curr_dir, args) {
-		if (!args[0]) {
-			return ("rm: missing operand", ResultType.error)
-		}
-		if (!this.rmHelper(args[0])) {
-			return("failed to remove '" + args[0] + "': No such file or directory", ResultType.error)
-		}
+		var file = this.getFile(this.buildPathList(path));
+		file.getParent().removeFile(file.getName())
 	}
 
 
+		//--------------------Saving & Restoring file system from localstorage------------------------
 
-
-
-	//--------------------------------Utility-------------------------------------
-
-	/*
-	Check if an Absolute path is already in the file system
-	*/
-	dirExists(path) {
-		for (let dir of this.allDirectories) {
-			if (dir.getPath() == path) {
-				return true
+		loadConfigFromLocalStorage() {
+			let dirs = JSON.parse(window.localStorage.getItem("directories"))
+	
+			if (!dirs) {
+				return -1;
 			}
-		}
-		return false
-	}
-
-	fileExists(path) {
-		for (let file of this.allFiles) {
-			if (file.getPath() == path) {
-				return true
+			for (let d of dirs) {
+				this.allDirectories.push(Directory(d.path))
 			}
-		}
-		return false
-	}
-
-	getDirWithPath(path) {
-		for (let dir of this.allDirectories) {
-			console.log(dir.getPath())
-			console.log(path)
-			if (dir.getPath() == path) {
-				return dir
+			let files = JSON.parse(window.localStorage.getItem("files"))
+			for (let f of files) {
+				this.allFiles.push(Link(f.path, f.url))
 			}
+			return 1;
 		}
-		return null
-	}
-
-	getFileWithPath(path) {
-		for (let file of this.allFiles) {
-			if (file.getPath() == path) {
-				return file
-			}
+	
+		storeConfigToLocalStorage() {
+			window.localStorage.setItem("directories", JSON.stringify(allDirectories))
+			window.localStorage.setItem("files", JSON.stringify(allFiles))
 		}
-		return null
-	}
-
-	pathIsAvailable(path) {
-		for (let i = 0; i < this.allDirectories.length; i++) {
-			let temp = path.split('/')
-			temp.pop()
-			temp = temp.join('/')
-			if (temp == this.allDirectories[i].getPath()) {
-				//Path is viable
-				return true
-			}
-		}
-		//Did not find a parent directory that matches the path until the name
-		return false
-	}
-
-
 }
 
 

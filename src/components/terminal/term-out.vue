@@ -1,7 +1,7 @@
 <template>
     <!-- Terminal Output -->
     <div id="console_out" class="console-out">
-        <a v-for="res in this.results">
+        <a v-for="res in this.out">
             {{res}}
         </a>
     </div>
@@ -15,7 +15,7 @@ export  default {
         return {}
     },
     props: {
-        results: Array
+        out: Array
     }
 }
 

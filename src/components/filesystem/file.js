@@ -18,4 +18,7 @@ class File {
 	getName() {
 		return this.name;
 	}
+	getParent() {
+		return this.parent;
+	}
 }

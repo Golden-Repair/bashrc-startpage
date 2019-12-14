@@ -3,13 +3,12 @@
     <prompt
       v-on:input="onCommand"
       v-on:submit="onCommandSubmit"
-      v-bind:wd="wd.getPath()"
+      v-bind:wd="this.wd"
     />
-    <term-out v-bind:results="sysCallResults" />
+    <term-out v-bind:out="this.out" />
   </div>
 </template>
 <script>
-
 import prompt from "./prompt.vue";
 import termOut from "./term-out.vue";
 
@@ -19,15 +18,26 @@ export default {
     prompt,
     termOut
   },
-    props: {
-      root: Object,
-      sysCallResults: Array
+  props: {
+    response: Array,
+    wd: String
+  },
+  watch: {
+    response: function(newVal, oldVal) {
+      if (newVal != 0 && newVal.length > 0) {
+        this.out = this.out.concat(newVal);
+      }
+    }
   },
   data: function() {
     return {
-      wd : this.root,
-      results: []
+      out: []
     };
+  },
+  computed: {
+    wdName() {
+      return this.wd.getName(y);
+    }
   },
 
   methods: {
@@ -39,17 +49,15 @@ export default {
       }
     },
 
-    onCommand: function(command) {
-    },
+    onCommand: function(command) {},
     onCommandSubmit: function(com) {
-      this.results = [];
+      this.out = [];
       var c = com.split(" ")[0];
       var args = com.split(" ").slice(1);
       try {
-      this[c](args);
+        this[c](args);
       } catch (e) {
-          this.$emit('system-call',this.wd,c,args);
-          this.results = this.results.concat(this.sysCallResults);
+        this.$emit("system-call", c, args);
       }
     }
   }

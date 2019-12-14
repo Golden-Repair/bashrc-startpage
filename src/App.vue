@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <terminal
-      v-bind:root="fs.getRoot()"
       v-on:system-call="onCall"
-      v-bind:sysCallResults="this.results"
+      v-bind:response="this.term.response"
+      v-bind:wd="this.term.wdName"
     />
   </div>
 </template>
@@ -17,44 +17,57 @@ export default {
   data() {
     return {
       fs: getFileSystem(),
-      results: []
+      term: { id: 0, wd: null, wdName: "", response: [] }
     };
   },
   props: {},
   components: {
     terminal
   },
+  computed: {},
+  beforeMount: function() {
+    this.term.wd = this.fs.getRoot();
+    this.term.wdName = this.term.wd.getName();
+  },
   methods: {
-    onCall: function(wd, call, args) {
-      this.results = [];
+    onCall: function(call, args) {
+      this.term.response = [];
       //try handling the command
       try {
-        this[call](wd, args);
+        this.term.response = this[call](args);
         //not recognized, forward to file system
       } catch (e) {
         try {
-          var temp = this.fs[call](wd, args);
-          if (!Array.isArray(temp)) {
-            temp = [temp];
+          var res = this.fs[call](this.term.wd, args);
+          if (typeof res == 'undefined') {
+            return;
           }
-          this.results = this.results.concat(temp);
+            if (Array.isArray(res)) {
+              this.term.response = res;
+            } else if (typeof res == 'string') { 
+              this.term.response = [res]
+            } else {
+              this.term.wd = res;
+              this.term.wdName = res.getName();
+            }
+          
         } catch (e1) {
-          this.results.push(`bashrc: command not found: ${call}`);
+          this.term.response = [`bashrc: command not found: ${call}`];
         }
       }
     },
     getRoot() {
       return this.fs.getRoot();
     },
-    clear: function(wd, args) {
-      this.results = [];
+    clear: function(args) {
+      return [];
     },
-    fetch: function(wd, args) {},
-    pwd: function(wd, args) {
-      this.results.push(wd.getName());
+    fetch: function(args) {},
+    pwd: function(args) {
+      return [this.term.wd.getName()];
     },
-    echo: function(wd, args) {
-      this.results.push(args.join(" "));
+    echo: function(args) {
+      return [args.join(" ")];
     }
   }
 };

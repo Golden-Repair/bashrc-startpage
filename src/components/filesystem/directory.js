@@ -2,11 +2,19 @@ export function newDirectory(name, parent, isRoot) {
 	return new Directory(name, parent);
 }
 
+export function dirFromJSON(parent, json_obj){
+	var d = new Directory(json_obj.name, parent, json_obj.isRoot);
+	d.children = json_obj.children.map(c => fromJSON(d, c));
+	d.files = json_obj.files.map(f => fromJSON(d, f));
+	return d;
+}
+
+
 class Directory {
 	constructor(name, parent, isRoot) {
 		this.name = name;
 		this.isRoot = isRoot;
-		if (parent) {
+		if (parent == null) {
 			this.isRoot = true;
 			this.parent = null;
 		} else {
@@ -17,6 +25,16 @@ class Directory {
 		this.children = [];
 		this.files = [];
 	}
+
+	toJSON() {
+		var json = {};
+		json.name = this.name;
+		json.isRoot = this.isRoot;
+		json.children = this.children.map(c => c.toJSON());
+		json.files = this.files.map(f => f.toJSON());
+		return json;		
+	}
+
 
 	appendChild(child) {
 		this.children.push(child);
@@ -45,7 +63,7 @@ class Directory {
 	}
 	getPath() {
 		if (this.parent) {
-			return this.parent.getPath().concat(this.name); 
+			return this.parent.getPath().concat("/"+this.name); 
 		} else {
 			return this.name;
 		}
@@ -56,6 +74,7 @@ class Directory {
 	}
 
 	getChild(name) {
+		console.log('my children:'+ this.children);
 		return this.children.filter(c => c.getName() == name)[0];
 	}
 	getFile(name) {
@@ -66,7 +85,11 @@ class Directory {
 		this.children = this.children.filter(c => c.getName() != name);
 	}
 	removeFile(name) {
+		if(this.getFileNames().indexOf(name) == -1){
+			return false;
+		}
 		this.files = this.files.filter(f => f.getName() != name);
+		return true;
 	}
 
 	getChildrenNames() {
@@ -86,8 +109,13 @@ class Directory {
 	}
 
 	addFile(file) {
+		if(this.getFileNames().indexOf(file.getName()) != -1) {
+			return false;
+		}
 		this.files.push(file);
+		return true;
 	}
+
 	
 }
 

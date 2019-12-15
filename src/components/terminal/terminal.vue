@@ -4,8 +4,11 @@
       v-on:input="onCommand"
       v-on:submit="onCommandSubmit"
       v-bind:wd="this.wd"
+      v-bind:suggestions="this.suggestions"
     />
-    <term-out v-bind:out="this.out" />
+    <term-out 
+    v-bind:out="this.out"
+    v-on:cd="onCommandSubmit"/>
   </div>
 </template>
 <script>
@@ -19,19 +22,22 @@ export default {
     termOut
   },
   props: {
-    response: Array,
-    wd: String
+    response: Object,
+    wd: String,
+    suggestions: Array
   },
   watch: {
-    response: function(newVal, oldVal) {
-      if (newVal != 0 && newVal.length > 0) {
-        this.out = this.out.concat(newVal);
-      }
+    response: function(newResponse, oldVal) {
+      this.out.dirs = newResponse.dirs;
+      this.out.files = newResponse.files;
+      this.out.messages = newResponse.messages
+    },
+    suggestions: function(newSuggestions, oldVal) {
     }
   },
   data: function() {
     return {
-      out: []
+      out: {"dirs": [], "files": [], "messages": []}
     };
   },
   computed: {
@@ -49,9 +55,11 @@ export default {
       }
     },
 
-    onCommand: function(command) {},
+    onCommand: function(input) {
+      this.$emit("get-suggestions", input)
+    },
     onCommandSubmit: function(com) {
-      this.out = [];
+      this.out = {"dirs": [], "files": [], "messages": []};
       var c = com.split(" ")[0];
       var args = com.split(" ").slice(1);
       try {
@@ -66,7 +74,6 @@ export default {
 
 <style>
 #console {
-  height: 100%;
   padding: 5rem;
   background-color: var(--dark);
   opacity: 0.95;

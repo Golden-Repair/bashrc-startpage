@@ -7,9 +7,10 @@
     </div>
     <div class="form-wrapper">
       <prompt-input
-        v-on:input="$emit('input', command)"
-        v-on:submit="$emit('submit', command)"
+        v-on:input="onInput"
+        v-on:submit="onSubmit"
         v-model="command"
+        v-bind:suggestions="suggestions"
       />
     </div>
   </div>
@@ -29,12 +30,23 @@ export default {
   },
   data: function() {
     return {
-        command: ''
+        command: '',
     }
   },
   props: {
       wd: String,
-  }
+      suggestions: Array
+  },
+  watch: {
+  },
+  methods: {
+    onInput: function(value) {
+      this.$emit("input", value);
+    },
+    onSubmit: function(value) {
+      this.$emit("submit", value);
+    },
+  },
 };
 </script>
 

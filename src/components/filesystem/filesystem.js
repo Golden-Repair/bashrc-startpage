@@ -1,5 +1,7 @@
-import {newDirectory} from './directory.js'
-import {newFile} from './file.js'
+import {newDirectory, dirFromJSON} from './directory.js'
+import {newFile, fileFromJSON} from './file.js'
+import { newResponse } from '../response.js'
+
 import { formatWithOptions } from 'util';
 
 export function getFileSystem() {
@@ -14,11 +16,9 @@ class FileSystem {
 		this.isAbsolutePathExp = /^\~/
 		
 		var config_exists = this.loadConfigFromLocalStorage();
-		if (config_exists == 1) {
-
-		} else {
+		console.log("Searching for config on local storage: "+config_exists)
+		if (config_exists == -1) {
 			//create root dir and push it into stack
-			this.root = newDirectory('~', null, true);
 		}
 	}
 
@@ -56,9 +56,9 @@ class FileSystem {
 		// else start at root and traverse tree until only name is left in path
 		var node = this.root;
 		console.log('searching '+path[0]+' in '+ node.getName())
-
+		console.log("path is: "+path)
 		while (path.length > 1) {
-			next = next.getRelative(path[0]);
+			node = node.getRelative(path[0]);
 			path = path.splice(1);
 		}
 		console.log('searching '+path[0]+' in '+ node.getName())
@@ -96,6 +96,23 @@ class FileSystem {
 		return node.getFile(path[0]);
 	}
 
+	getLastPathNode(dir, path) {
+		var path = args[0].slice(0,args[0].lastIndexOf(this.separator));
+
+		if (!this.isAbsolutePathExp.test(path)) {
+			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
+		}
+		var node = this.getDir(this.buildPathList(path));
+		return node;
+
+	}
+
+	getPathTarget(dir, path) {
+		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
+
+
+	}
+
 
 // ------------------------- BASIC FILE SYSTEM COMMANDS ------------------------
 
@@ -116,66 +133,95 @@ class FileSystem {
 				node = this.getDir(`${dir.getPath()}${this.separator}${args[0]}`);
 			}
 		}
-
-		return node.getChildrenNames().concat(node.getFileNames());
+		var res = newResponse();
+		res.dirs = node.getChildrenNames();
+		res.files = node.getFiles().map(f => ({"name": f.getName(), "url": f.getUrl()}));
+		return res;
 	}
 
 	cd(dir, args) {
 		console.log('cd')
+		var res = newResponse()
 		switch (args[0]) {
 			case "..":
-				return dir.getParent()
+				res.directory = dir.getParent()
+				break;
 			case undefined:
-				return this.getRoot()
+				res.directory = this.getRoot()
+				break;
 			default:
-				console.log(`${dir.getPath()}${this.separator}${args}`)
-				return this.getDir(`${dir.getPath()}${this.separator}${args}`);
+				res.directory = this.getDir(`${dir.getPath()}${this.separator}${args}`)
+				break;
 		}
+		return res;
 	}
 
 	mkdir(dir, args) {
 		console.log(`mkdir: ${dir} - ${args}`)
+		var res = newResponse();
 		if (!args[0]) {
-			return "mkdir: missing operand";
+			res.message.push({"type": "error", "value":"mkdir: missing operand"});
+			return res;
 		}
-		if (dir.getChildrenNames().indexOf(args[0]) == -1) {
-			dir.appendChild(newDirectory(args[0], dir));
+		var path = args[0].slice(0,args[0].lastIndexOf(this.separator));
+		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
+		console.log(`mkdir: path: ${path} - name: ${name}`)
+
+		if (!this.isAbsolutePathExp.test(path)) {
+			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
+		}
+		var node = this.getDir(this.buildPathList(path));
+		console.log("found node: "+node);
+		if (node.getChildrenNames().indexOf(name) == -1) {
+			node.appendChild(newDirectory(name, node));
+			this.storeConfigToLocalStorage()
 		} else {
-			return `mkdir: cannot create directory '${args[0]}': File exists`;
+			res.messages.push({"type": "error", "value": `mkdir: cannot create directory '${args[0]}': File exists`});
+			return res;
 		}
 	}
 
 	rmdir(dir, args) {
+		res = newResponse()
 		if (!args[0]) {
-			return 'rmdir: missing operand';
+			res.messages.push({"type": error, "value": 'rmdir: missing operand'});
 		}
 		var node = this.getDir(this.buildPathList(dir.getPath()+this.separator+args[0]));
 		if(!node.isEmpty()) {
-			return `failed to remove ${node.getName()}: Directory not empty`
+			res.messages.push({"type": error, "value": `failed to remove ${node.getName()}: Directory not empty`})
+			return res
 		}
 		node.getParent().removeChild(node.getName());
 	}
 
 	touch(dir, args) {
+		console.log(`touch: ${dir} - ${args}`)
+		var res = newResponse();
 		if (!args[0] || !args[1]) {
-			return "touch: missing file operand"
+			res.messages.push({"type": "error", "value": "touch: missing file operand"})
+			return res
 		}
-		var path = args[0].slice(0,args[0].lastIndexOf(this.separator));
+		var path = args[0].slice(0,args[0].lastIndexOf(this.separator)+1);
 		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
+		console.log(`touch: path: ${path} - name: ${name}`)
+
 		if (!this.isAbsolutePathExp.test(path)) {
 			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
 		}
 		
-		console.log('path compl: '+path);
-		console.log('name: '+name);
 		var node = this.getDir(this.buildPathList(path));
-		node.addFile(newFile(name, args[1], node));
-
+		if(!node.addFile(newFile(name, args[1], node))) {
+			res.messages.push({"type":"error", "value": `touch: cannot create file '${name}': File exists`});
+			return res;
+		}
+		
 	}
 
 	rm(dir, args) {
+		var res = newResponse();
 		if (!args[0]) {
-			return "rm: missing operand"
+			res.messages.push({"type": "error", "value": "rm: missing operand"});
+			return res;
 		}
 		var path = args[0];
 		if (!this.isAbsolutePathExp.test(args[0])) {
@@ -183,32 +229,36 @@ class FileSystem {
 		}
 
 		var file = this.getFile(this.buildPathList(path));
-		file.getParent().removeFile(file.getName())
+		if(!file.getParent().removeFile(file.getName())) {
+			res.messages.push({"type": "error", "value": `rm: cannot remove '${test}: No such file or directory'` });
+		}
+	}
+
+	api() {
+		return ["cd", "touch", "rm", "mkdir", "rmdir", "ls"];
 	}
 
 
 		//--------------------Saving & Restoring file system from localstorage------------------------
 
 		loadConfigFromLocalStorage() {
-			let dirs = JSON.parse(window.localStorage.getItem("directories"))
-	
-			if (!dirs) {
+			let json_obj = JSON.parse(window.localStorage.getItem("root"))
+			this.root = newDirectory('~', null, true);
+			if (!json_obj) {
 				return -1;
+			} else {
+				this.root.children = json_obj.children.map(c => dirFromJSON(this.root, c));
+				this.root.files = json_obj.files.map(f => fileFromJSON(this.root, f));
+				return 1;
 			}
-			for (let d of dirs) {
-				this.allDirectories.push(Directory(d.path))
-			}
-			let files = JSON.parse(window.localStorage.getItem("files"))
-			for (let f of files) {
-				this.allFiles.push(Link(f.path, f.url))
-			}
-			return 1;
 		}
 	
 		storeConfigToLocalStorage() {
-			window.localStorage.setItem("directories", JSON.stringify(allDirectories))
-			window.localStorage.setItem("files", JSON.stringify(allFiles))
+			console.log("Storing root node in local storage")
+			localStorage.setItem("root", JSON.stringify(this.getRoot().toJSON()));
 		}
+
+
 }
 
 

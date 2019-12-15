@@ -1,9 +1,12 @@
 <template>
   <div id="app">
     <terminal
+      class="floating"
       v-on:system-call="onCall"
+      v-on:get-suggestions="suggest"
       v-bind:response="this.term.response"
       v-bind:wd="this.term.wdName"
+      v-bind:suggestions="this.term.suggestions"
     />
   </div>
 </template>
@@ -11,13 +14,14 @@
 <script>
 import terminal from "./components/terminal/terminal";
 import { getFileSystem } from "./components/filesystem/filesystem.js";
+import { newResponse } from "./components/response";
 
 export default {
   name: "app",
   data() {
     return {
       fs: getFileSystem(),
-      term: { id: 0, wd: null, wdName: "", response: [] }
+      term: { id: 0, wd: null, wdName: "", response: {}, suggestions: []}
     };
   },
   props: {},
@@ -31,7 +35,7 @@ export default {
   },
   methods: {
     onCall: function(call, args) {
-      this.term.response = [];
+      this.term.response = {};
       //try handling the command
       try {
         this.term.response = this[call](args);
@@ -39,70 +43,105 @@ export default {
       } catch (e) {
         try {
           var res = this.fs[call](this.term.wd, args);
-          if (typeof res == 'undefined') {
+          if (typeof res == "undefined") {
             return;
           }
-            if (Array.isArray(res)) {
-              this.term.response = res;
-            } else if (typeof res == 'string') { 
-              this.term.response = [res]
-            } else {
-              this.term.wd = res;
-              this.term.wdName = res.getName();
-            }
-          
+          if (res.directory == null) {
+            this.term.response = res;
+          } else {
+            this.term.wd = res.directory;
+            this.term.wdName = res.directory.getName();
+          }
         } catch (e1) {
-          this.term.response = [`bashrc: command not found: ${call}`];
+          var res = newResponse();
+          res.messages.push({
+            type: "error",
+            value: `bashrc: command not found: ${call}`
+          });
+          this.term.response = res;
         }
       }
     },
+    suggest: function(input) {
+      //input contains a space, suggesting that the user has already typed a command and
+      //is now typing the arguments
+              console.log("input: "+input)
+                      var content;
+
+      
+      if(input.indexOf(" ") != -1) {
+        console.log("input: "+input)
+        var command = input.split(" ")[0]+" ";
+        var arg_dir = input.split(" ").splice(1)[0];
+        console.log("arg dir: "+arg_dir.length)
+        // input path contains a separator, search suggestions in last directory of path
+        if (arg_dir.indexOf(this.fs.separator) != -1) {
+          arg_dir = arg_dir.substr(arg_dir.lastIndexOf(this.fs.separator)+1);
+          console.log("arg_dir: "+arg_dir)
+          var node = this.fs.getDir(this.term.wd, arg_dir);
+          console.log(node.getName())
+        content = node.getChildrenNames().map(n => command.concat(n));
+        } else {
+          console.log("arg dir has no separator, suggesting content of current directory")
+          content = this.term.wd.getChildrenNames()//.map(n => command.concat(n));
+                  console.log("content: "+content)
+
+        }
+        this.term.suggestions = content;
+      } else {
+        // User has not yet typed a space -> suggest commands or files to open
+      var my_functions = this.api();
+      var fs_functions = this.fs.api();
+      var files = this.term.wd.getFileNames();
+      this.term.suggestions = my_functions.concat(files).concat(fs_functions);
+      }
+    },
+
+    getMethods() {
+      var res = [];
+      for (var m in this) {
+        if (typeof this[m] == "function") {
+          res.push(m);
+        }
+      }
+      return res;
+    },
     getRoot() {
-      return this.fs.getRoot();
+      var res = newResponse();
+      res.messages.push({ type: "value", value: this.fs.getRoot() });
+      return res;
     },
     clear: function(args) {
-      return [];
+      return newResponse();
     },
     fetch: function(args) {},
     pwd: function(args) {
-      return [this.term.wd.getName()];
+      var res = newResponse();
+      res.messages.push({ type: "value", value: this.term.wd.getName() });
+      return res;
     },
     echo: function(args) {
-      return [args.join(" ")];
+      var res = newResponse();
+      res.messages.push({ type: "value", value: args.join(" ") });
+      return res;
+    },
+    api: function() {
+      return ["clear", "fetch", "pwd", "echo"];
     }
   }
 };
 </script>
 
 <style lang="scss">
-:root {
-  --cyan: #8fbcbb;
-  --dark: #1a1e21;
-  --blue: #81a1c1;
-  --darkblue: #5e81ac;
-  --orange: #d08770;
-  --yellow: #ebcb8b;
-  --green: #a3be8c;
-  --pink: #b48ead;
-  --red: #bf616a;
-  --white: #d8dee9;
+.floating {
+  height: 400px;
+  width: 600px;
+  margin: auto;
+  margin-top: 10%;
 }
 
-html,
-body,
-.main-screen {
+.fullscreen {
   height: 100%;
-  max-height: 100vw;
-}
-.main-screen {
-  padding: 3rem;
-}
-
-body {
-  color: #ffffff;
-  font-size: 20px;
-  font-family: "FantasqueSansMonoRegular";
-  font-weight: normal;
-  font-style: normal;
-  background: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
+  width: 100%;
 }
 </style>

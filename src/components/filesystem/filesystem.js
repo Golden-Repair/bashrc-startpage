@@ -30,12 +30,20 @@ class FileSystem {
 		return path.split(this.separator);
 	}
 
-	biuldPathString(path_list) {
+	buildPathString(path_list) {
 		return path_list.join(this.separator);
 	}
 
-	getDir(path) {
+	/*
+	type: 
+	0: all
+	1: dirs
+	2: files
+	TODO: Fix how we get nodes and files
+	*/
+	getNode(path, type) {
 		console.log(`getDir: ${path}`)
+		var node;
 		//if path is a string, convert to list of names
 		if (!Array.isArray(path)) {
 			path = this.buildPathList(path)
@@ -45,12 +53,12 @@ class FileSystem {
 
 		//if path length is empty now it can ony be root
 		if (path.length == 0) {
-			return this.root;
+			node = this.root;
 		}
 		// if path has length 1 it can only be a direct child of root
 		if (path.length == 1) {
 			console.log('searching '+path[0]+' in '+ this.getRoot().getName())
-			return this.root.getChild(path[0]);
+			node = this.root.getNode(path[0]);
 		}
 		console.log('path: '+path)
 		// else start at root and traverse tree until only name is left in path
@@ -62,55 +70,34 @@ class FileSystem {
 			path = path.splice(1);
 		}
 		console.log('searching '+path[0]+' in '+ node.getName())
-		return node.getChild(path[0]);
+		return node.getNode(path[0]);
 	}
 
-	getFile(path) {
-		console.log(`getFile: ${path}`)
-		//if path is a string, convert to list of names
-		if (!Array.isArray(path)) {
-			path = this.buildPathList(path)
-		}
-		//if path starts from root, remove root from path
-		path = path.filter(p => p != this.getRoot().getName());
-
-		//if path length is empty now it can ony be root
-		if (path.length == 0) {
-			return `rm: cannot remove '${path}': Is a directory`;
-		}
-		// if path has length 1 it can only be a direct child of root
-		if (path.length == 1) {
-			console.log('searching '+path[0]+' in '+ this.getRoot().getName())
-			return this.root.getFile(path[0]);
-		}
-		console.log('path: '+path)
-		// else start at root and traverse tree until only name is left in path
-		var node = this.root;
-		console.log('searching '+path[0]+' in '+ node.getName())
-
-		while (path.length > 1) {
-			next = next.getRelative(path[0]);
-			path = path.splice(1);
-		}
-		console.log('searching '+path[0]+' in '+ node.getName())
-		return node.getFile(path[0]);
-	}
 
 	getLastPathNode(dir, path) {
-		var path = args[0].slice(0,args[0].lastIndexOf(this.separator));
+		// path does not contain separator, so it only contains a name
+		// -> path is name
+		if (path.indexOf(this.separator) == -1) {
+			return dir;
+		}
+		var path = path.slice(0,path.lastIndexOf(this.separator));
+		console.log("I want to find node: "+path);
 
 		if (!this.isAbsolutePathExp.test(path)) {
 			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
 		}
+
 		var node = this.getDir(this.buildPathList(path));
 		return node;
 
 	}
 
 	getPathTarget(dir, path) {
-		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
-
-
+		if (!this.isAbsolutePathExp.test(path)) {
+			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
+		}
+		var node = this.getDir(this.buildPathList(path));
+		return node;
 	}
 
 
@@ -142,16 +129,11 @@ class FileSystem {
 	cd(dir, args) {
 		console.log('cd')
 		var res = newResponse()
-		switch (args[0]) {
-			case "..":
-				res.directory = dir.getParent()
-				break;
-			case undefined:
-				res.directory = this.getRoot()
-				break;
-			default:
-				res.directory = this.getDir(`${dir.getPath()}${this.separator}${args}`)
-				break;
+		if(!args[0]) {
+			res.directory = this.getRoot()
+		} else {
+			res.directory = this.getDir(`${dir.getPath()}${this.separator}${args}`)
+
 		}
 		return res;
 	}
@@ -163,14 +145,9 @@ class FileSystem {
 			res.message.push({"type": "error", "value":"mkdir: missing operand"});
 			return res;
 		}
-		var path = args[0].slice(0,args[0].lastIndexOf(this.separator));
 		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
-		console.log(`mkdir: path: ${path} - name: ${name}`)
 
-		if (!this.isAbsolutePathExp.test(path)) {
-			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
-		}
-		var node = this.getDir(this.buildPathList(path));
+		var node = this.getLastPathNode(dir, this.buildPathString(args[0]));
 		console.log("found node: "+node);
 		if (node.getChildrenNames().indexOf(name) == -1) {
 			node.appendChild(newDirectory(name, node));
@@ -182,16 +159,19 @@ class FileSystem {
 	}
 
 	rmdir(dir, args) {
+		console.log("rmdir:" + dir + " - " + args)
 		res = newResponse()
 		if (!args[0]) {
 			res.messages.push({"type": error, "value": 'rmdir: missing operand'});
 		}
-		var node = this.getDir(this.buildPathList(dir.getPath()+this.separator+args[0]));
+		var node = this.getPathTarget(dir, args[0]);
+		console.log("node: "+node.getName())
 		if(!node.isEmpty()) {
 			res.messages.push({"type": error, "value": `failed to remove ${node.getName()}: Directory not empty`})
 			return res
 		}
 		node.getParent().removeChild(node.getName());
+		this.storeConfigToLocalStorage()
 	}
 
 	touch(dir, args) {
@@ -201,15 +181,8 @@ class FileSystem {
 			res.messages.push({"type": "error", "value": "touch: missing file operand"})
 			return res
 		}
-		var path = args[0].slice(0,args[0].lastIndexOf(this.separator)+1);
 		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
-		console.log(`touch: path: ${path} - name: ${name}`)
-
-		if (!this.isAbsolutePathExp.test(path)) {
-			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
-		}
-		
-		var node = this.getDir(this.buildPathList(path));
+		var node = this.getLastPathNode(dir, args[0]);
 		if(!node.addFile(newFile(name, args[1], node))) {
 			res.messages.push({"type":"error", "value": `touch: cannot create file '${name}': File exists`});
 			return res;
@@ -223,12 +196,8 @@ class FileSystem {
 			res.messages.push({"type": "error", "value": "rm: missing operand"});
 			return res;
 		}
-		var path = args[0];
-		if (!this.isAbsolutePathExp.test(args[0])) {
-			path = dir.getPath()+ this.separator + path;
-		}
 
-		var file = this.getFile(this.buildPathList(path));
+		var file = this.getPathTarget(dir, args[0]);
 		if(!file.getParent().removeFile(file.getName())) {
 			res.messages.push({"type": "error", "value": `rm: cannot remove '${test}: No such file or directory'` });
 		}

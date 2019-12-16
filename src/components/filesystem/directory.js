@@ -80,6 +80,9 @@ class Directory {
 	getFile(name) {
 		return this.files.filter(f => f.getName() == name)[0];
 	}
+	getNode(name) {
+		return this.getChild(name).concat(this.getFile(name));
+	}
 
 	removeChild(name) {
 		this.children = this.children.filter(c => c.getName() != name);

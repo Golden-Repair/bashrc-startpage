@@ -1,7 +1,7 @@
 import {newDirectory, dirFromJSON} from './directory.js'
 import {newFile, fileFromJSON} from './file.js'
 import { newResponse } from '../response.js'
-
+import {log} from '../logger'
 import { formatWithOptions } from 'util';
 
 export function getFileSystem() {
@@ -16,7 +16,6 @@ class FileSystem {
 		this.isAbsolutePathExp = /^\~/
 		
 		var config_exists = this.loadConfigFromLocalStorage();
-		console.log("Searching for config on local storage: "+config_exists)
 		if (config_exists == -1) {
 			//create root dir and push it into stack
 		}
@@ -34,6 +33,10 @@ class FileSystem {
 		return path_list.join(this.separator);
 	}
 
+	removeTrailingNode(path) {
+		return path.substr(path.indexOf(this.separator)+1)
+	}
+
 	/*
 	type: 
 	0: all
@@ -41,85 +44,38 @@ class FileSystem {
 	2: files
 	TODO: Fix how we get nodes and files
 	*/
-	getNode(path, type) {
-		console.log(`getDir: ${path}`)
-		var node;
-		//if path is a string, convert to list of names
-		if (!Array.isArray(path)) {
-			path = this.buildPathList(path)
-		}
-		//if path starts from root, remove root from path
-		path = path.filter(p => p != this.getRoot().getName());
+	getNode(dir, path) {
+		log('getNode: ',`${dir.getName()} - ${path}`)
 
-		//if path length is empty now it can ony be root
-		if (path.length == 0) {
-			node = this.root;
-		}
-		// if path has length 1 it can only be a direct child of root
-		if (path.length == 1) {
-			console.log('searching '+path[0]+' in '+ this.getRoot().getName())
-			node = this.root.getNode(path[0]);
-		}
-		console.log('path: '+path)
-		// else start at root and traverse tree until only name is left in path
-		var node = this.root;
-		console.log('searching '+path[0]+' in '+ node.getName())
-		console.log("path is: "+path)
-		while (path.length > 1) {
-			node = node.getRelative(path[0]);
-			path = path.splice(1);
-		}
-		console.log('searching '+path[0]+' in '+ node.getName())
-		return node.getNode(path[0]);
-	}
-
-
-	getLastPathNode(dir, path) {
+		// path is absolute, start search at root and remove root at start of path
+		if (this.isAbsolutePathExp.test(path)) {
+			return this.getNode(this.root, this.removeTrailingNode(path))
+		} else
 		// path does not contain separator, so it only contains a name
-		// -> path is name
+		// -> path is direct name
 		if (path.indexOf(this.separator) == -1) {
-			return dir;
-		}
-		var path = path.slice(0,path.lastIndexOf(this.separator));
-		console.log("I want to find node: "+path);
+			if(path.length ==0){
+				return dir;
+			}
+			return dir.getRelative(path);
+		}  
 
-		if (!this.isAbsolutePathExp.test(path)) {
-			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
-		}
-
-		var node = this.getDir(this.buildPathList(path));
-		return node;
-
+		// neither direct name nor absolute 
+		// -> get first node in path, restart search in first node in path with cut-off path
+		var next_node = dir.getRelative(path.split(this.separator)[0]);
+		return this.getNode(next_node, this.removeTrailingNode(path));
 	}
 
-	getPathTarget(dir, path) {
-		if (!this.isAbsolutePathExp.test(path)) {
-			path = path.length > 0 ? dir.getPath()+this.separator+path : dir.getPath()
-		}
-		var node = this.getDir(this.buildPathList(path));
-		return node;
-	}
 
 
 // ------------------------- BASIC FILE SYSTEM COMMANDS ------------------------
 
 
 	ls(dir, args) {
-		console.log(`ls: ${dir} - ${args}`)
-		var node;
-		// no arguments, print content of 'dir'
-		if (args[0] == undefined) {
-			node = dir;
-		// got argument
-		} else {
-			// argument is absolute path
-			if (this.isAbsolutePathExp.test(args[0])) {
-				node = this.getDir(args[0])
-			// argument is relative path
-			} else {
-				node = this.getDir(`${dir.getPath()}${this.separator}${args[0]}`);
-			}
-		}
+		log('ls', `${dir} - ${args}`, 'green')
+		// node is either specified by path or current node
+		var node = args[0] ? this.getNode(dir, args[0]) : dir;
+
 		var res = newResponse();
 		res.dirs = node.getChildrenNames();
 		res.files = node.getFiles().map(f => ({"name": f.getName(), "url": f.getUrl()}));
@@ -127,30 +83,41 @@ class FileSystem {
 	}
 
 	cd(dir, args) {
-		console.log('cd')
+		log('cd', `${dir} - ${args}`, 'green')
 		var res = newResponse()
-		if(!args[0]) {
-			res.directory = this.getRoot()
-		} else {
-			res.directory = this.getDir(`${dir.getPath()}${this.separator}${args}`)
-
+		if(args[0]) {
+			var d = this.getNode(dir,args[0])
+			log('found node',d.getName())
+			if(d.url){
+				res.messages.push({"type": "error", "value":`cd: not a directory: ${d.getName()}`});
+				return res;
+			}
+			res.directory = d;
+			return res;
 		}
+		// goal dir is either root or a relative dir from current dir
+		res.directory = this.getRoot() 
 		return res;
 	}
 
 	mkdir(dir, args) {
-		console.log(`mkdir: ${dir} - ${args}`)
+		log('mkdir', `${dir} - ${args}`, 'green')
 		var res = newResponse();
+		// check if required args are submitted
 		if (!args[0]) {
-			res.message.push({"type": "error", "value":"mkdir: missing operand"});
+			res.messages.push({"type": "error", "value":"mkdir: missing operand"});
 			return res;
 		}
-		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
-
-		var node = this.getLastPathNode(dir, this.buildPathString(args[0]));
-		console.log("found node: "+node);
-		if (node.getChildrenNames().indexOf(name) == -1) {
-			node.appendChild(newDirectory(name, node));
+		// we always need at least a name
+		var name = args[0].substr(args[0].lastIndexOf(this.separator)+1);
+		var path = args[0].substr(0,args[0].lastIndexOf(this.separator));
+		var node = this.getNode(dir, path);
+		if(!node) {
+			res.messages.push({"type": "error",
+			 "value":`mkdir: cannnot create directory '${args}': No such file or directory`});
+			 return res;
+		}
+		if (node.addChild(newDirectory(name, node))) {
 			this.storeConfigToLocalStorage()
 		} else {
 			res.messages.push({"type": "error", "value": `mkdir: cannot create directory '${args[0]}': File exists`});
@@ -159,47 +126,78 @@ class FileSystem {
 	}
 
 	rmdir(dir, args) {
-		console.log("rmdir:" + dir + " - " + args)
-		res = newResponse()
+		log("rmdir",dir + " - " + args, 'green')
+		var res = newResponse();
+		// check if required args are submitted
 		if (!args[0]) {
 			res.messages.push({"type": error, "value": 'rmdir: missing operand'});
+			return res;
 		}
-		var node = this.getPathTarget(dir, args[0]);
-		console.log("node: "+node.getName())
+		var node = this.getNode(dir, args[0]);
+		if(!node) {
+			res.messages.push({"type": "error",
+			 "value":`rmdir: failed to remove '${args}': No such file or directory`});
+			return res;
+			}
+		if(node.url){
+			res.messages.push({"type": "error", "value":`rmdir: failed to remove '${node.getName()}': Not a directory`});
+			return res;
+		}
 		if(!node.isEmpty()) {
 			res.messages.push({"type": error, "value": `failed to remove ${node.getName()}: Directory not empty`})
 			return res
 		}
-		node.getParent().removeChild(node.getName());
+		if(!node.getParent().removeChild(node.getName())) {
+			res.messages.push({"type": error, "value": `rmdir: failed to remove ${node.getName()}: No such file or directory`})
+			return res;
+		}
 		this.storeConfigToLocalStorage()
 	}
 
 	touch(dir, args) {
-		console.log(`touch: ${dir} - ${args}`)
+		log('touch', `${dir} - ${args}`, 'green')
 		var res = newResponse();
 		if (!args[0] || !args[1]) {
 			res.messages.push({"type": "error", "value": "touch: missing file operand"})
 			return res
 		}
-		var name = args[0].slice(args[0].lastIndexOf(this.separator)+1);
-		var node = this.getLastPathNode(dir, args[0]);
+		var name = args[0].substr(args[0].lastIndexOf(this.separator)+1);
+		var path = args[0].substr(0,args[0].lastIndexOf(this.separator));
+
+		var node = this.getNode(dir, path);
+		if(!node) {
+			res.messages.push({"type": "error",
+			 "value":`touch: cannot touch '${args}': No such file or directory`});
+			 return res;
+		}
 		if(!node.addFile(newFile(name, args[1], node))) {
 			res.messages.push({"type":"error", "value": `touch: cannot create file '${name}': File exists`});
 			return res;
 		}
-		
+		this.storeConfigToLocalStorage()
 	}
 
 	rm(dir, args) {
+		log('rm', `${dir} - ${args}`, 'green')
 		var res = newResponse();
 		if (!args[0]) {
 			res.messages.push({"type": "error", "value": "rm: missing operand"});
 			return res;
 		}
 
-		var file = this.getPathTarget(dir, args[0]);
+		var file = this.getNode(dir, args[0]);
+		if(!file) {
+			res.messages.push({"type": "error",
+			 "value":`rm: cannot remove '${args}': No such file or directory`});
+			 return res;
+		}
+		if(!file.url) {
+			res.messages.push({"type": "error", "value": `rm: cannot remove '${file.getName()}: Is a directory'` });
+			return res;
+		}
 		if(!file.getParent().removeFile(file.getName())) {
-			res.messages.push({"type": "error", "value": `rm: cannot remove '${test}: No such file or directory'` });
+			res.messages.push({"type": "error", "value": `rm: cannot remove '${file.getName()}: No such file'` });
+			return res;
 		}
 	}
 
@@ -216,6 +214,7 @@ class FileSystem {
 			if (!json_obj) {
 				return -1;
 			} else {
+				log('system',"Got filesystem config from local storage", 'purple')
 				this.root.children = json_obj.children.map(c => dirFromJSON(this.root, c));
 				this.root.files = json_obj.files.map(f => fileFromJSON(this.root, f));
 				return 1;
@@ -223,7 +222,7 @@ class FileSystem {
 		}
 	
 		storeConfigToLocalStorage() {
-			console.log("Storing root node in local storage")
+			log('system',"Storing root node in local storage", 'purple')
 			localStorage.setItem("root", JSON.stringify(this.getRoot().toJSON()));
 		}
 

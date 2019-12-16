@@ -13,6 +13,10 @@
 
 import jQuery from 'jquery';
 
+/*
+TODO: use this: https://www.devbridge.com/sourcery/components/jquery-autocomplete/
+instead of this garbage autocompleter!
+*/
 
 (function($) {
 	var keys = {
@@ -43,7 +47,7 @@ import jQuery from 'jquery';
 			arrowKeys: false,
 			caseSensitive: false,
 			hint: "placeholder",
-			minLength: 1
+			minLength: 0
 		}, options);
 		
 		// Remove any leftovers.

@@ -1,11 +1,13 @@
+import {fileFromJSON} from './file'
+
 export function newDirectory(name, parent, isRoot) {
 	return new Directory(name, parent);
 }
 
 export function dirFromJSON(parent, json_obj){
 	var d = new Directory(json_obj.name, parent, json_obj.isRoot);
-	d.children = json_obj.children.map(c => fromJSON(d, c));
-	d.files = json_obj.files.map(f => fromJSON(d, f));
+	d.children = json_obj.children.map(c => dirFromJSON(d, c));
+	d.files = json_obj.files.map(f => fileFromJSON(d, f));
 	return d;
 }
 
@@ -36,8 +38,24 @@ class Directory {
 	}
 
 
-	appendChild(child) {
+	addChild(child) {
+		if(this.getFileNames().indexOf(child.getName()) != -1 ||
+		this.getChildrenNames().indexOf(child.getName()) != -1
+		) {
+			return false;
+		}
 		this.children.push(child);
+		return true;
+	}
+
+	addFile(file) {
+		if(this.getFileNames().indexOf(file.getName()) != -1 ||
+		this.getChildrenNames().indexOf(file.getName()) != -1
+		) {
+			return false;
+		}
+		this.files.push(file);
+		return true;
 	}
 
 	getParent() {
@@ -48,13 +66,11 @@ class Directory {
 		if(name == '..') {
 			return this.getParent();
 		} else {
-			return this.getChild(name);
+			return this.getNode(name);
 		}
 	}
 
 	isEmpty() {
-		console.log('isempty')
-		console.log('test:' +this.children.length == 0 && this.files.length == 0)
 		return this.children.length == 0 && this.files.length == 0;
 	}
 
@@ -74,18 +90,21 @@ class Directory {
 	}
 
 	getChild(name) {
-		console.log('my children:'+ this.children);
 		return this.children.filter(c => c.getName() == name)[0];
 	}
 	getFile(name) {
 		return this.files.filter(f => f.getName() == name)[0];
 	}
 	getNode(name) {
-		return this.getChild(name).concat(this.getFile(name));
+		return this.getChild(name) ? this.getChild(name) : this.getFile(name); 
 	}
 
 	removeChild(name) {
+		if(this.getChildrenNames().indexOf(name) == -1){
+			return false;
+		}
 		this.children = this.children.filter(c => c.getName() != name);
+		return true;
 	}
 	removeFile(name) {
 		if(this.getFileNames().indexOf(name) == -1){
@@ -111,13 +130,7 @@ class Directory {
 		return this.files;
 	}
 
-	addFile(file) {
-		if(this.getFileNames().indexOf(file.getName()) != -1) {
-			return false;
-		}
-		this.files.push(file);
-		return true;
-	}
+
 
 	
 }

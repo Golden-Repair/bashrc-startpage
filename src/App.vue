@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <terminal
+    <filemanager
       class="floating"
       v-bind:fs="this.fs"
     />
@@ -9,6 +9,7 @@
 
 <script>
 import terminal from "./components/terminal/terminal";
+import filemanager from './components/filemanager/filemanager'
 import { getFileSystem } from "./components/filesystem/filesystem.js";
 import { newResponse } from "./components/response";
 import { log } from "./components/logger";
@@ -22,7 +23,8 @@ export default {
   },
   props: {},
   components: {
-    terminal
+    terminal,
+    filemanager
   },
   methods: {
     suggest: function(input) {

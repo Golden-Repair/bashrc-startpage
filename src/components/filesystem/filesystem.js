@@ -85,8 +85,15 @@ class FileSystem {
 	cd(dir, args) {
 		log('cd', `${dir} - ${args}`, 'green')
 		var res = newResponse()
+		if(!Array.isArray(args)){
+			args = args.split(' ')
+		}
 		if(args[0]) {
 			var d = this.getNode(dir,args[0])
+			if(!d){
+				res.messages.push({"type": "error", "value":`cd: No such directory: ${args[0]}`});
+				return res;
+			}
 			log('found node',d.getName())
 			if(d.url){
 				res.messages.push({"type": "error", "value":`cd: not a directory: ${d.getName()}`});
@@ -108,8 +115,12 @@ class FileSystem {
 			res.messages.push({"type": "error", "value":"mkdir: missing operand"});
 			return res;
 		}
+		if(!Array.isArray(args)){
+			args = args.split(' ')
+		}
 		// we always need at least a name
 		var name = args[0].substr(args[0].lastIndexOf(this.separator)+1);
+		log('mkdir: name', name, 'green')
 		var path = args[0].substr(0,args[0].lastIndexOf(this.separator));
 		var node = this.getNode(dir, path);
 		if(!node) {
@@ -133,6 +144,9 @@ class FileSystem {
 			res.messages.push({"type": "error", "value": 'rmdir: missing operand'});
 			return res;
 		}
+		if(!Array.isArray(args)){
+			args = args.split(' ')
+		}
 		var node = this.getNode(dir, args[0]);
 		if(!node) {
 			res.messages.push({"type": "error",
@@ -155,8 +169,11 @@ class FileSystem {
 	}
 
 	touch(dir, args) {
-		log('touch', `${dir} - ${args}`, 'green')
+		log('touch', `${dir} - ${args}`, 'purple')
 		var res = newResponse();
+		if(!Array.isArray(args)){
+			args = args.split(' ')
+		}
 		if (!args[0] || !args[1]) {
 			res.messages.push({"type": "error", "value": "touch: missing file operand"})
 			return res
@@ -180,6 +197,9 @@ class FileSystem {
 	rm(dir, args) {
 		log('rm', `${dir} - ${args}`, 'green')
 		var res = newResponse();
+		if(!Array.isArray(args)){
+			args = args.split(' ')
+		}
 		if (!args[0]) {
 			res.messages.push({"type": "error", "value": "rm: missing operand"});
 			return res;

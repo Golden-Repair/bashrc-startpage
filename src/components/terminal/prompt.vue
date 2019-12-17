@@ -10,7 +10,7 @@
         v-on:input="onInput"
         v-on:submit="onSubmit"
         v-model="command"
-        v-bind:suggestions="suggestions"
+        v-bind:termSuggestions="suggestions"
       />
     </div>
   </div>
@@ -20,6 +20,7 @@
 import promptDecoration from "./prompt-decoration.vue";
 import promptInput from "./prompt-input.vue";
 import workingDirectory from "./working-directory.vue";
+import { log } from "../logger";
 
 export default {
   name: "prompt",
@@ -44,6 +45,7 @@ export default {
       this.$emit("input", value);
     },
     onSubmit: function(value) {
+      log('prompt: got input', value)
       this.$emit("submit", value);
     },
   },

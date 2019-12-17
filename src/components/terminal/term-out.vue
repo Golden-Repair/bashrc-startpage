@@ -3,7 +3,7 @@
   <div id="console_out" class="console-out">
     <a v-for="(dir, index) in this.out.dirs" v-bind:key=index v-on:click="$emit('cd', `cd ${dir}`)" class="directory" >{{dir}}</a>
     <a v-for="(file, index) in this.out.files" v-bind:key=index class="file" :href="file.url">{{file.name}}</a>
-    <a v-for="(msg, index) in this.out.messages" v-bind:key=index :class="msg.type">{{msg.value}}</a>
+    <a v-for="(msg, index) in this.out.messages" v-bind:key=index :class="msg.type" :style="msg.css">{{msg.value}}</a>
   </div>
 </template>
 

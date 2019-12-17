@@ -130,7 +130,7 @@ class FileSystem {
 		var res = newResponse();
 		// check if required args are submitted
 		if (!args[0]) {
-			res.messages.push({"type": error, "value": 'rmdir: missing operand'});
+			res.messages.push({"type": "error", "value": 'rmdir: missing operand'});
 			return res;
 		}
 		var node = this.getNode(dir, args[0]);
@@ -144,11 +144,11 @@ class FileSystem {
 			return res;
 		}
 		if(!node.isEmpty()) {
-			res.messages.push({"type": error, "value": `failed to remove ${node.getName()}: Directory not empty`})
+			res.messages.push({"type": "error", "value": `failed to remove ${node.getName()}: Directory not empty`})
 			return res
 		}
 		if(!node.getParent().removeChild(node.getName())) {
-			res.messages.push({"type": error, "value": `rmdir: failed to remove ${node.getName()}: No such file or directory`})
+			res.messages.push({"type": "error", "value": `rmdir: failed to remove ${node.getName()}: No such file or directory`})
 			return res;
 		}
 		this.storeConfigToLocalStorage()

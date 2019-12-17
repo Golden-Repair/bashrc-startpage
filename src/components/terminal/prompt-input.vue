@@ -1,62 +1,118 @@
 <template>
   <!-- Prompt & user input -->
-  <form v-on:submit.prevent="onSubmit">
-    <input
-      id="input_field"
-      name="cmd"
-      v-model="input"
-      v-on:input.prevent="onInput"
-      type="text"
-      autofocus="autofocus"
-      autocomplete="off"
+  <div>
+    <form>
+      <input
+        id="input_field"
+        name="cmd"
+        v-model="input"
+        v-on:input.prevent="onInput"
+        v-on:keydown.9.prevent=""
+        v-on:keyup.9.prevent="next"
+        v-on:keydown.13.prevent=""
+        v-on:keyup.13.prevent="enter"
+        type="text"
+        autofocus="autofocus"
+        autocomplete="off"
+      />
+    </form>
+    <suggestions
+      v-bind:suggestions="termSuggestions"
+      v-bind:suggestionIndex="index"
+      v-bind:show='showSuggestions'
     />
-  </form>
+  </div>
 </template>
 
-
-
 <script>
-import tabcomplete from "../autocompletion/commandCompletion";
-import $ from "jquery";
+//import { $, jQuery } from "jquery";
+import suggestions from "./suggestions.vue";
+import "expose-loader?$!expose-loader?jQuery!jquery";
+import easyAutocomplete from "easy-autocomplete";
+import { log } from "../logger";
 
 export default {
   name: "promptInput",
   data() {
     return {
       input: "",
-      currentSuggestion: "",
-      sugg_obj: { suggestions: ["test", "lol"] }
+      index: 0,
+      showSuggestions: false,
     };
   },
   props: {
-    suggestions: Array
+    termSuggestions: Array
   },
-  components: {},
+  components: {
+    suggestions
+  },
   methods: {
     onSubmit(command) {
-      this.$emit("submit",$('input[name="cmd"]').val());
-        $('input[name="cmd"]').val("");
+      log('input: submitting', $('input[name="cmd"]').val())
+      this.$emit("submit", $('input[name="cmd"]').val());
+      $('input[name="cmd"]').val("");
 
       //this.input = ''
     },
     onInput(event) {
-      this.$emit("input",$('input[name="cmd"]').val());
+      this.$emit("input", $('input[name="cmd"]').val());
+      this.index = -1;
       //this.currentSuggestion = this.suggestions[0].slice(this.input.length);
-    }
+    },
+    next(event) {
+      if(this.termSuggestions.length == 0) return
+      if(!this.showSuggestions) {
+        this.showSuggestions = true;
+        this.index =0;
+      } else {
+        if(this.termSuggestions.length == 1) {
+          this.enter(event);
+        }
+      this.index = (this.index + 1) % this.termSuggestions.length;
+      }
+    },
+    enter(event) {
+      if (this.index == -1) {
+        this.$emit("submit", $('input[name="cmd"]').val());
+        $('input[name="cmd"]').val("");
+      } else {
+        var completed_input = this.getCompletedInput(this.input);
+        this.input = completed_input.concat(this.termSuggestions[this.index]);
+        if(completed_input.length > 0) {
+          this.input = this.input.concat("/");
+        } else {
+          this.input = this.input.concat(" ");
+        }
+        log("accepted suggestion", this.termSuggestions[this.index]);
+        this.$emit("input", this.input);
+
+        this.index = -1;
+        this.showSuggestions = false;
+      }
+      },
+      getCompletedInput(input) {
+        var space_ind = input.lastIndexOf(" ");
+        var sep_ind = input.lastIndexOf("/");
+        var last = space_ind > sep_ind ? space_ind : sep_ind;
+        if(last == -1) {
+          return ""
+        } else {
+          return input.substring(0, last+1);
+        }
+      }
+
   },
-  mounted: function() {
-    $('input[name="cmd"]').tabcomplete(this.sugg_obj);
-  },
+  mounted: function() {},
   computed: {
     input_value: function() {
       return $('input[name="cmd"]').val();
     }
   },
   watch: {
-      suggestions: function() {
-                this.sugg_obj.suggestions = this.suggestions;
-                console.log("got new suggestions: "+this.suggestions)
-      }
+    termSuggestions: function() {
+      //this.sugg_obj.suggestions = this.suggestions;
+      log("got new suggestions", this.suggestions, "blue");
+    }
   }
 };
 </script>

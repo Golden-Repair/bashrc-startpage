@@ -6,6 +6,7 @@ var data = {};
 
 import 'expose-loader?$!expose-loader?jQuery!jquery'
 
+
 new Vue({
   el: '#app',
   data : data,

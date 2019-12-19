@@ -30,6 +30,7 @@ export default {
   methods: {
       onSubmit: function(){
           this.$emit('submit', this.input);
+          this.input = '';
       }
   },
   computed: {
@@ -70,7 +71,6 @@ input {
     border: none;
     margin-left: 0;
     color: var(--white);
-
 }
 .title {
     height: 40px;

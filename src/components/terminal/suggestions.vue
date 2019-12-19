@@ -1,5 +1,5 @@
 <template>
-  <ul v-if="show">
+  <ul id="suggestions" v-if="show">
     <li
     v-for="(sug, index) in this.suggestions"
     v-bind:class="{active: index == suggestionIndex}" 
@@ -51,7 +51,7 @@ li {
     list-style: none;
 }
 
-ul {
+#suggestions {
       /* Old Chrome, Safari, Opera */
   -webkit-column-count: 3; 
   -webkit-column-width: 100px;

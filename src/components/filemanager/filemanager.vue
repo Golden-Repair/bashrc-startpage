@@ -5,7 +5,7 @@
         v-on:keydown.38.prevent="up"
         v-on:keydown.39.prevent="enter"
         v-on:keydown.13.prevent="enter"
-        v-on:keydown.65='add'
+        v-on:keyup.65='add'
         v-on:keydown.68='remove'
         v-on:keydown.80='paste'
         v-on:keydown.27.prevent='cancel'
@@ -27,7 +27,7 @@
           {{ node.name }}
         </li>
       </ul>
-      <div class="prompt-wrapper" v-if="dialogStage !=0">
+      <div class="fm-prompt-wrapper" v-if="dialogStage !=0">
         <prompt 
         v-bind:label="dialog[dialogStage].label"
         v-bind:type="dialog[dialogStage].type"
@@ -121,6 +121,8 @@ export default {
         }
     },
     remove: function(){
+        if(this.dialogStage != 0) return
+
         if(this.markedRemove.indexOf(this.selected) == -1){
             this.markedRemove.push(this.selected);
         } else {
@@ -254,7 +256,7 @@ ul {
 .wd {
     margin-left: 1rem;
 }
-.prompt-wrapper {
+.fm-prompt-wrapper {
     position:absolute;
     bottom:22px;
     width: 100%;

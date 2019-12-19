@@ -123,7 +123,7 @@ export default {
   overflow: hidden;
 }
 
-input {
+#input_field {
   width: 100%;
   outline: none !important;
   background: none;

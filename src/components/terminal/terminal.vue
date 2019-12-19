@@ -1,5 +1,5 @@
 <template>
-  <div id="console">
+  <div>
     <prompt
       v-on:input="onCommand"
       v-on:submit="onCommandSubmit"
@@ -233,7 +233,7 @@ export default {
 </script>
 
 <style>
-#console {
+#terminal {
   padding: 5rem;
   background-color: var(--dark);
   opacity: 0.95;

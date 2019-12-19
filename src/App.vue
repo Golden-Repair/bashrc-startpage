@@ -16,7 +16,14 @@
       class="application"
       id="weather"
       v-if="this.config.activeApps.indexOf('weather') != -1"
+      v-bind:city='this.config.city'
     />
+    <todo
+    class='application'
+    id='todo'
+    v-if="this.config.activeApps.indexOf('todo') != -1"
+    >
+    </todo>
     <settingsIcon
       v-on:click="toggleSettings"
       id="settingsIcon"
@@ -24,6 +31,7 @@
     ></settingsIcon>
     <settings
       v-on:appsChanged="buildApps"
+      v-on:cityChanged="setCity"
       id="settings"
       ref="settings"
     ></settings>
@@ -35,6 +43,7 @@ import $ from "jquery";
 import terminal from "./components/terminal/terminal";
 import filemanager from "./components/filemanager/filemanager";
 import weather from "./components/widgets/weather";
+import todo from "./components/widgets/todo";
 import settings from "./components/settings/settings";
 import settingsIcon from "./components/settings/settingsIcon";
 import { getFileSystem } from "./components/filesystem/filesystem.js";
@@ -42,17 +51,7 @@ import { newResponse } from "./components/response";
 import { log } from "./components/logger";
 
 
-/*
-TODO: 
-- set city via settings applet and store to local storage (1)
-- implement todo (2)
-- implement filetree (9)
-- implement colorscheme framework (3)
-- implement colorscheme selection & generation (4)
-- implement drag & drop in floating state (5)
-- save window positions in floating state to config (5)
-- implement split layouts other than just vertical split (5)
-*/
+
 
 
 
@@ -64,6 +63,7 @@ export default {
       settingsOpen: false,
       config: {
         activeApps: [],
+        city: '',
         state: 'floating'
       }
     };
@@ -74,7 +74,8 @@ export default {
     filemanager,
     settings,
     settingsIcon,
-    weather
+    weather,
+    todo
   },
   mounted: function() {
     this.getConfig();
@@ -112,12 +113,17 @@ export default {
       this.config.activeApps = apps;
       this.storeConfig();
     },
+    setCity: function(city) {
+      this.config.city = city;
+      this.storeConfig();
+    },
     getConfig: function() {
       var config = JSON.parse(window.localStorage.getItem("config"));
       log("got config", config.activeApps);
       if (config.activeApps) {
         this.config.activeApps = config.activeApps;
         this.config.state = config.state;
+        this.config.city = config.city;
       }
     },
     storeConfig: function() {
@@ -146,8 +152,16 @@ export default {
   top:20px;
   left:900px;
 }
+
+.floating #todo {
+  width:300px;
+  height:200px;
+  top:420px;
+  left:900px;
+}
+
 .floating #terminal {
-  width:900px;
+  width:500px;
   height:220px;
   top:500px;
   left:100px;

@@ -1,6 +1,7 @@
 
 # BASHRC
 
+![demo](https://github.com/cbrasser/bashrc/demo_screen.png)
 
 ## Functionality
 

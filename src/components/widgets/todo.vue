@@ -12,7 +12,13 @@
       <td>{{task.name}}</td>
       <td>{{task.priority}}</td>
       <td>{{task.duedate}}</td>
-      <td><span v-for="(tag) in task.tags">{{tag}}</span></td>
+      <td><span class="tag"
+            v-for="(tag) in task.tags"
+            v-bind:style="{'background-color': getTagColor(tag)}"
+            v-on:click='showColorPicker(tag)'>
+            {{tag}}
+            </span>
+      </td>
       </tr>
     </tr>
     </table>
@@ -24,6 +30,13 @@
     <label for='duedate'>due</label><input v-model='duedate' id='duedate' type='date'></input>
 
     </form>
+    <div class='color-picker'>
+    <span class='color'
+    v-for='(color) in colors'
+    v-bind:style="{'background-color': color}"
+    v-on:click='setTagColor(color)'
+    ></span>
+    </div>
   </div>
 </template>
 
@@ -43,10 +56,28 @@ export default {
       priority: 0,
       duedate: null,
       showForm: false,
+      colorPickerActive: false,
+      colors: [
+        'var(--cyan)',
+        'var(--blue)',
+        'var(--darkblue)',
+        'var(--orange)',
+        'var(--yellow)',
+        'var(--pink)',
+        'var(--green)',
+        'var(--red)',
+        'var(--white)',
+      ]
     };
   },
   props: {},
-  watch: {},
+  watch: {
+    colorPickerActive: function(newVal, oldVal) {
+      if (newVal) {
+      $('.color-picker').slideToggle();
+      }
+    }
+  },
   methods: {
     loadFromLocalStorage: function() {
       let json_obj = JSON.parse(window.localStorage.getItem("todo"));
@@ -56,6 +87,21 @@ export default {
     },
     storeToLocalStorage: function() {
       localStorage.setItem("todo", JSON.stringify(this.todos));
+    },
+    getTagColor: function(tag) {
+      log('gettagcolor', tag, 'red')
+      return this.todos.tags[this.todos.tags.map(t => t.name).indexOf(tag)].color;
+    },
+    setTagColor: function(color) {
+      log('settagcolor', color, 'red')
+      this.todos.tags[this.todos.tags.map(t => t.name).indexOf(this.selectedTag)].color = color;
+          $('.color-picker').slideToggle();
+          this.colorPickerActive = false;
+
+    },
+    showColorPicker: function(tag) {
+      this.selectedTag = tag;
+      this.colorPickerActive = true;
     },
     addTask: function() {
         log('addTask', this.title, 'red')
@@ -100,7 +146,38 @@ export default {
   opacity: 0.95;
 }
 
+.todo-title {
+  text-transform: uppercase;
+}
+
+.table-header {
+  margin-bottom: 0.5rem;
+}
+
 table {
     width: 100%;
+    margin-top: 1rem;
 }
+
+.tag {
+  color: var(--dark);
+  font-size: 0.8rem;
+  padding: 0.1rem;
+  cursor: pointer;
+}
+
+.color-picker {
+  display:none;
+  position: absolute;
+  bottom:0;
+  left:0;
+}
+
+.color {
+  height: 20px;
+  width: 40px;
+  display: inline-block;
+  cursor: pointer;
+}
+
 </style>

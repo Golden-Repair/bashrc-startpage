@@ -92,7 +92,7 @@ export default {
 
 <style>
 .weather-wrapper {
-  padding: 5rem;
+  margin: 5rem;
   background-color: var(--dark);
   opacity: 0.95;
 }

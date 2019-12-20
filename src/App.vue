@@ -1,11 +1,21 @@
 <template>
-  <div id="app" :class="config.state">
-    <filemanager
+  <div id="app" :class="config.state" 
+  >
+    <draggable id='fm'
+    v-bind:component="fm"
+    v-model='fmposition'
+    v-on:dragStart='setClickPos'
+    >
+    <div slot='application'>
+    <filemanager 
       class="application"
       id="filemanager"
       v-if="this.config.activeApps.indexOf('fm') != -1"
       v-bind:fs="this.fs"
-    />
+    ></filemanager>
+    </div>
+    </draggable>
+    
     <terminal
       class="application"
       id="terminal"
@@ -16,12 +26,12 @@
       class="application"
       id="weather"
       v-if="this.config.activeApps.indexOf('weather') != -1"
-      v-bind:city='this.config.city'
+      v-bind:city="this.config.city"
     />
     <todo
-    class='application'
-    id='todo'
-    v-if="this.config.activeApps.indexOf('todo') != -1"
+      class="application"
+      id="todo"
+      v-if="this.config.activeApps.indexOf('todo') != -1"
     >
     </todo>
     <settingsIcon
@@ -44,6 +54,7 @@ import terminal from "./components/terminal/terminal";
 import filemanager from "./components/filemanager/filemanager";
 import weather from "./components/widgets/weather";
 import todo from "./components/widgets/todo";
+import draggable from './components/widgets/draggable'
 import settings from "./components/settings/settings";
 import settingsIcon from "./components/settings/settingsIcon";
 import { getFileSystem } from "./components/filesystem/filesystem.js";
@@ -59,13 +70,18 @@ export default {
   name: "app",
   data() {
     return {
+      fm: 'filemanager',
       fs: getFileSystem(),
       settingsOpen: false,
       config: {
         activeApps: [],
         city: '',
-        state: 'floating'
-      }
+        state: 'floating',
+      },
+        dragmode: false,
+        fmposition: {left: 50, top:20},
+        clickPos: {x: 0,y:0},
+
     };
   },
   props: {},
@@ -75,13 +91,26 @@ export default {
     settings,
     settingsIcon,
     weather,
-    todo
+    todo,
+    draggable
   },
   mounted: function() {
     this.getConfig();
   },
-  watch: {},
+  watch: {
+    dragmode: function(dragmodeNew, dragmodeOld) {
+      log('dragmode changed', dragmodeNew)
+    },
+    fmposition: function(newPos, oldPos) {
+      log('setting fm to y', newPos.top)
+      var prevOffset = $(`#filemanager`).offset();
+      $(`#filemanager`).offset({left: this.clickPos.x + newPos.left, top: this.clickPos.y + newPos.top});
+    }
+  },
   methods: {
+    setClickPos: function(pos) {
+      this.clickPos = pos;
+    },
     toggleSettings: function() {
       this.settingsOpen = !this.settingsOpen;
       log("settings open", this.settingsOpen);
@@ -142,38 +171,36 @@ export default {
 .floating {
 }
 
-.floating .application{
-  position:absolute;
+.floating .application {
+  position: absolute;
 }
 
 .floating #weather {
-  width:300px;
-  height:200px;
-  top:20px;
-  left:900px;
+  width: 300px;
+  height: 200px;
+  top: 20px;
+  left: 900px;
 }
 
 .floating #todo {
-  width:300px;
-  height:200px;
-  top:420px;
-  left:900px;
+  width: 300px;
+  height: 200px;
+  top: 420px;
+  left: 900px;
 }
 
 .floating #terminal {
-  width:500px;
-  height:220px;
-  top:500px;
-  left:100px;
+  width: 500px;
+  height: 220px;
+  top: 500px;
+  left: 100px;
 }
-.floating #filemanager {
-  width:300px;
-  height:250px;
-  top:20px;
-  left:50px;
+.floating #fm {
+  width: 300px;
+  height: 250px;
+  top: 20px;
+  left: 50px;
 }
-
-
 
 .fullscreen {
   height: 100%;

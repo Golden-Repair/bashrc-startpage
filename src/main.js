@@ -12,3 +12,13 @@ new Vue({
   data : data,
   render: h => h(App)
 })
+
+
+/*
+TODO: 
+- finish styling of todo widget (2)
+- implement filetree (9)
+- implement colorscheme framework (3)
+- implement colorscheme selection & generation (4)
+- implement split layouts other than just vertical split (5)
+*/

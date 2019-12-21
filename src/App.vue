@@ -52,6 +52,7 @@ TODO:
 - implement drag & drop in floating state (5)
 - save window positions in floating state to config (5)
 - implement split layouts other than just vertical split (5)
+- implement youtube player (8)
 */
 
 

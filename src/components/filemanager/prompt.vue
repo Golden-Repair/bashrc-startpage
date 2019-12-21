@@ -57,7 +57,6 @@ export default {
     flex-wrap: wrap;
     background-color: var(--dark);
     border: 2px solid var(--pink);
-    border:
 }
 
 .label {

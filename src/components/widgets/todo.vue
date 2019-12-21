@@ -1,57 +1,42 @@
 <template>
   <div class="todo-wrapper">
     <div class='todo-title'>todo</div>
-
+    <div class="todo-list">
     <div class='todo-entry'
     v-for="(task, index) in todos.active" v-bind:key="index"
     >
     <div class='todo-name'>> {{task.name}}</div>
     <div class='todo-tags'>
     <span class="tag"
-            v-for="(tag) in task.tags"
+            v-for="(tag, index) in task.tags"
+            v-bind:key="tag+index"
             v-bind:style="{'background-color': getTagColor(tag)}"
             v-on:click='showColorPicker(tag)'>
             {{tag}}
             </span>
     </div>
+    <div class="todo-complete"
+    v-on:click='completeTask(task.name)'
+    ><i class="material-icons">backspace</i></div>
     <div class='todo-text'>{{task.description}}</div>
     </div>
-<!--
-    <table>
-    <tr class='table-header'>
-    <th>name</th>
-    <th>prio</th>
-    <th>due</th>
-    <th>tags</th>
-    </tr>
-      <tr class='table-entry' v-for="(task, index) in todos.active" v-bind:key="index">
-      <td>{{task.name}}</td>
-      <td>{{task.priority}}</td>
-      <td>{{task.duedate}}</td>
-      <td><span class="tag"
-            v-for="(tag) in task.tags"
-            v-bind:style="{'background-color': getTagColor(tag)}"
-            v-on:click='showColorPicker(tag)'>
-            {{tag}}
-            </span>
-      </td>
-      </tr>
-    </tr>
-    </table>
-    -->
-    <button v-on:click='showForm = !showForm'>add</button>
-    <br>
-    <form v-if='showForm' v-on:keydown.13.prevent='addTask'>
-    <label for='title'>title</label><input v-model='title' id='title' type='text'></input><br>
-    <label for='title'>description</label><input v-model='desc' id='desc' type='text'></input>
 
-    <!--<label for='priority'>priority</label><input v-model='priority' id='priority' type='text' number></input>
-    <label for='duedate'>due</label><input v-model='duedate' id='duedate' type='date'></input>
--->
+    <br>
+        </div>
+
+    <form class='todo-prompt'>
+
+        <span class='todo-prompt-label'>{{label}}</span>
+        <input ref="input" v-model="input" 
+                v-on:keydown.13.prevent="addTask" 
+                :placeholder="placeholder" 
+                id="value"/>
     </form>
+
     <div class='color-picker'>
     <span class='color'
-    v-for='(color) in colors'
+    v-for='(color, index) in colors'
+    v-bind:key="color+index"
     v-bind:style="{'background-color': color}"
     v-on:click='setTagColor(color)'
     ></span>
@@ -71,11 +56,13 @@ export default {
           completed: [],
           tags: [],
       },
-      title: '',
+      input: '',
+      label: 'add',
+      placeholder: 'task [tag, tog]: Do this thing finally',
       priority: 0,
       duedate: null,
       desc: '',
-      showForm: false,
+      showForm: true,
       colorPickerActive: false,
       colors: [
         'var(--cyan)',
@@ -127,13 +114,12 @@ export default {
       this.colorPickerActive = true;
     },
     addTask: function() {
-        log('addTask', this.title, 'red')
-        var name = this.title.split(' ')[0]
-        var task = { name: name, description: this.desc, tags: []};
-        if (this.duedate) {
-            task.duedate = this.duedate;
-        }
-        var tags = this.title.split('[')[1];
+        log('addTask', this.input, 'red')
+        var input_both = this.input.split(":");
+        var name = input_both[0].split(' ')[0]
+        var task = { name: name, description: input_both[1], tags: []};
+
+        var tags = input_both[0].split('[')[1];
         if (tags){
             tags = tags.substr(0, tags.length-1);
             console.log(tags)
@@ -144,6 +130,7 @@ export default {
             this.addTagsIfNew(task.tags)
         }
       this.todos.active.push(task);
+      this.input ='';
       this.storeToLocalStorage();
     },
     addTagsIfNew: function(tags) {
@@ -153,8 +140,8 @@ export default {
     completeTask: function(name) {
       var index = this.todos.active.map(t => t.name).indexOf(name);
       if (index != -1) {
-        var task = this.todos.splice(index, 1);
-        this.todos.archive.push(task);
+        var task = this.todos.active.splice(index, 1);
+        this.todos.completed.push(task);
       }
     }
   },
@@ -175,13 +162,26 @@ th {
   border-bottom:  1px solid var(--white);
 }
 
-.todo-name, .todo-tags {
+.todo-name, .todo-tags, .todo-complete {
   display: inline;
+}
+
+.todo-complete {
+  float: right;
+  cursor: pointer;
+
 }
 
 .todo-wrapper {
   opacity: 0.95;
+
 }
+
+.todo-list {
+    overflow: auto;
+  scrollbar-width: none;
+  max-height:calc(100% - 3rem);
+}                                    
 
 .todo-title {
   text-transform: uppercase;
@@ -193,9 +193,6 @@ th {
   margin-bottom: 0.5rem;
 }
 
-table {
-    width: 100%;
-}
 
 .tag {
   color: var(--dark);
@@ -204,6 +201,17 @@ table {
   cursor: pointer;
   margin-right: 0.3rem;
   border-radius: 3px;
+}
+
+.todo-prompt {
+    position:absolute;
+    bottom:22px;
+    width: 70%;
+    height: 22px;
+    margin: auto;
+    overflow: hidden;
+    display:flex;
+
 }
 
 .color-picker {
@@ -222,6 +230,20 @@ table {
   display: inline-block;
   cursor: pointer;
   flex-grow:1;
+}
+
+.todo-prompt-label {
+    margin-right: 0.2rem;
+    padding: 0;
+    background-color: var(--green);
+    color: var(--dark);
+}
+input {
+    background-color: var(--dark);
+    border: none;
+    margin-left: 0;
+    color: var(--white);
+    flex-grow:1;
 }
 
 </style>

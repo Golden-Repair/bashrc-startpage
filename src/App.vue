@@ -95,7 +95,7 @@ export default {
       config: {
         activeApps: [],
         city: "",
-        state: "tiled",
+        state: "floating",
         appPositions: {
           fmDrag: { left: 50, top: 20, width: 300, height: 200 },
           termDrag: { left: 100, top: 500, width: 300, height: 200 },
@@ -214,6 +214,7 @@ export default {
     },
     getConfig: function() {
       var config = JSON.parse(window.localStorage.getItem("config"));
+      if(!config) return;
       log("got config", config.activeApps);
       if (config.activeApps) {
         this.config.activeApps = config.activeApps;

@@ -10,7 +10,6 @@
         v-on:keydown.80='paste'
         v-on:keydown.27.prevent='cancel'
   >
-    </input>
     <div class="wrapper">
       <ul>
         <li

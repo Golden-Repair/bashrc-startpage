@@ -211,7 +211,6 @@ export default {
 }
 
 #filemanager {
-  padding: 5rem;
   background-color: var(--dark);
   opacity: 0.95;
 }

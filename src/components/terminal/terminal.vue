@@ -234,8 +234,6 @@ export default {
 
 <style>
 #terminal {
-  padding: 5rem;
-  background-color: var(--dark);
   opacity: 0.95;
 }
 </style>

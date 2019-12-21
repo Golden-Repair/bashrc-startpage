@@ -1,6 +1,22 @@
 <template>
   <div class="todo-wrapper">
-    <span class='todo-title'>todo</span>
+    <div class='todo-title'>todo</div>
+
+    <div class='todo-entry'
+    v-for="(task, index) in todos.active" v-bind:key="index"
+    >
+    <div class='todo-name'>> {{task.name}}</div>
+    <div class='todo-tags'>
+    <span class="tag"
+            v-for="(tag) in task.tags"
+            v-bind:style="{'background-color': getTagColor(tag)}"
+            v-on:click='showColorPicker(tag)'>
+            {{tag}}
+            </span>
+    </div>
+    <div class='todo-text'>{{task.description}}</div>
+    </div>
+<!--
     <table>
     <tr class='table-header'>
     <th>name</th>
@@ -22,13 +38,16 @@
       </tr>
     </tr>
     </table>
+    -->
     <button v-on:click='showForm = !showForm'>add</button>
     <br>
     <form v-if='showForm' v-on:keydown.13.prevent='addTask'>
-    <label for='title'>title</label><input v-model='title' id='title' type='text'></input>
-    <label for='priority'>priority</label><input v-model='priority' id='priority' type='text' number></input>
-    <label for='duedate'>due</label><input v-model='duedate' id='duedate' type='date'></input>
+    <label for='title'>title</label><input v-model='title' id='title' type='text'></input><br>
+    <label for='title'>description</label><input v-model='desc' id='desc' type='text'></input>
 
+    <!--<label for='priority'>priority</label><input v-model='priority' id='priority' type='text' number></input>
+    <label for='duedate'>due</label><input v-model='duedate' id='duedate' type='date'></input>
+-->
     </form>
     <div class='color-picker'>
     <span class='color'
@@ -55,6 +74,7 @@ export default {
       title: '',
       priority: 0,
       duedate: null,
+      desc: '',
       showForm: false,
       colorPickerActive: false,
       colors: [
@@ -74,7 +94,10 @@ export default {
   watch: {
     colorPickerActive: function(newVal, oldVal) {
       if (newVal) {
-      $('.color-picker').slideToggle();
+      $('.color-picker').css('opacity', 1);
+      } else {
+              $('.color-picker').css('opacity', 0);
+
       }
     }
   },
@@ -95,7 +118,7 @@ export default {
     setTagColor: function(color) {
       log('settagcolor', color, 'red')
       this.todos.tags[this.todos.tags.map(t => t.name).indexOf(this.selectedTag)].color = color;
-          $('.color-picker').slideToggle();
+      this.storeToLocalStorage()
           this.colorPickerActive = false;
 
     },
@@ -106,14 +129,17 @@ export default {
     addTask: function() {
         log('addTask', this.title, 'red')
         var name = this.title.split(' ')[0]
-        var task = { name: name, priority: this.priority, tags: [], duedate: '' };
+        var task = { name: name, description: this.desc, tags: []};
         if (this.duedate) {
             task.duedate = this.duedate;
         }
         var tags = this.title.split('[')[1];
         if (tags){
             tags = tags.substr(0, tags.length-1);
-            tags = tags.split('/,\s*/');
+            console.log(tags)
+
+            tags = tags.split(/,\s*/);
+            log('tags', tags.length)
             task.tags = tags;
             this.addTagsIfNew(task.tags)
         }
@@ -140,14 +166,27 @@ export default {
 </script>
 
 <style>
+
+tr {
+  border-bottom: 1px solid var(--white);
+}
+
+th {
+  border-bottom:  1px solid var(--white);
+}
+
+.todo-name, .todo-tags {
+  display: inline;
+}
+
 .todo-wrapper {
-  padding: 5rem;
-  background-color: var(--dark);
   opacity: 0.95;
 }
 
 .todo-title {
   text-transform: uppercase;
+    margin-bottom:1.5rem;
+
 }
 
 .table-header {
@@ -156,7 +195,6 @@ export default {
 
 table {
     width: 100%;
-    margin-top: 1rem;
 }
 
 .tag {
@@ -164,13 +202,18 @@ table {
   font-size: 0.8rem;
   padding: 0.1rem;
   cursor: pointer;
+  margin-right: 0.3rem;
+  border-radius: 3px;
 }
 
 .color-picker {
-  display:none;
+  display:flex;
+  opacity: 0;
   position: absolute;
   bottom:0;
   left:0;
+  width: 100%;
+  transition: opacity 0.6s;
 }
 
 .color {
@@ -178,6 +221,7 @@ table {
   width: 40px;
   display: inline-block;
   cursor: pointer;
+  flex-grow:1;
 }
 
 </style>

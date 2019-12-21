@@ -1,39 +1,63 @@
 <template>
-  <div id="app" :class="config.state" 
-  >
-    <draggable id='fm'
-    v-bind:component="fm"
-    v-model='fmposition'
-    v-on:dragStart='setClickPos'
-    >
-    <div slot='application'>
-    <filemanager 
-      class="application"
-      id="filemanager"
+  <div id="app" :class="config.state">
+    <draggable
+    ref='fmDrag'
+      v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+      id="fmDrag"
+      component="fmDrag"
+      v-model="drag"
+      v-on:dragStart="setClickPos"
       v-if="this.config.activeApps.indexOf('fm') != -1"
-      v-bind:fs="this.fs"
-    ></filemanager>
-    </div>
+    >
+      <div slot="application" class="application-wrapper">
+        <filemanager
+          class="application"
+          id="filemanager"
+          v-bind:fs="this.fs"
+        ></filemanager>
+      </div>
     </draggable>
-    
-    <terminal
-      class="application"
-      id="terminal"
+
+    <draggable
+      v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+      id="termDrag"
+      component="termDrag"
+      v-model="drag"
+      v-on:dragStart="setClickPos"
       v-if="this.config.activeApps.indexOf('term') != -1"
-      v-bind:fs="this.fs"
-    />
-    <weather
-      class="application"
-      id="weather"
+    >
+      <div slot="application" class="application-wrapper">
+        <terminal class="application" id="terminal" v-bind:fs="this.fs" />
+      </div>
+    </draggable>
+    <draggable
+      v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+      id="weatherDrag"
+      component="weatherDrag"
+      v-model="drag"
+      v-on:dragStart="setClickPos"
       v-if="this.config.activeApps.indexOf('weather') != -1"
-      v-bind:city="this.config.city"
-    />
-    <todo
-      class="application"
-      id="todo"
+    >
+      <div slot="application" class="application-wrapper">
+        <weather
+          class="application"
+          id="weather"
+          v-bind:city="this.config.city"
+        />
+      </div>
+    </draggable>
+    <draggable
+      v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+      id="todoDrag"
+      component="todoDrag"
+      v-model="drag"
+      v-on:dragStart="setClickPos"
       v-if="this.config.activeApps.indexOf('todo') != -1"
     >
-    </todo>
+      <div slot="application" class="application-wrapper">
+        <todo class="application" id="todo"> </todo>
+      </div>
+    </draggable>
     <settingsIcon
       v-on:click="toggleSettings"
       id="settingsIcon"
@@ -54,34 +78,34 @@ import terminal from "./components/terminal/terminal";
 import filemanager from "./components/filemanager/filemanager";
 import weather from "./components/widgets/weather";
 import todo from "./components/widgets/todo";
-import draggable from './components/widgets/draggable'
+import draggable from "./components/widgets/draggable";
 import settings from "./components/settings/settings";
 import settingsIcon from "./components/settings/settingsIcon";
 import { getFileSystem } from "./components/filesystem/filesystem.js";
 import { newResponse } from "./components/response";
 import { log } from "./components/logger";
 
-
-
-
-
-
 export default {
   name: "app",
   data() {
     return {
-      fm: 'filemanager',
+      fm: "filemanager",
       fs: getFileSystem(),
       settingsOpen: false,
       config: {
         activeApps: [],
-        city: '',
-        state: 'floating',
+        city: "",
+        state: "tiled",
+        appPositions: {
+          fmDrag: { left: 50, top: 20, width: 300, height: 200 },
+          termDrag: { left: 100, top: 500, width: 300, height: 200 },
+          todoDrag: { left: 900, top: 420, width: 500, height: 220 },
+          weatherDrag: { left: 900, top: 20, width: 300, height: 250 }
+        }
       },
-        dragmode: false,
-        fmposition: {left: 50, top:20},
-        clickPos: {x: 0,y:0},
-
+      drag: { left: 0, top: 0, component: "" },
+      clickPos: { x: 0, y: 0 },
+      ready: false
     };
   },
   props: {},
@@ -94,20 +118,56 @@ export default {
     todo,
     draggable
   },
-  mounted: function() {
+  created: function() {
     this.getConfig();
+    var wm = this;
+    setTimeout(function() {
+      wm.restoreApplicationDimensions();
+      wm.ready = true;
+    }, 100);
   },
+  mounted: function() {},
   watch: {
-    dragmode: function(dragmodeNew, dragmodeOld) {
-      log('dragmode changed', dragmodeNew)
+    drag: function(drag, oldPos) {
+      log('component', drag.component, 'blue')
+      var prevOffset = $(`#${drag.component}`).offset();
+      $(`#${drag.component}`).offset({
+        left: prevOffset.left + drag.left,
+        top: prevOffset.top + drag.top
+      });
+      this.config.appPositions[drag.component].left =
+        prevOffset.left + drag.left
+        this.config.appPositions[drag.component].top =
+          prevOffset.top + drag.top;
+      this.storeConfig();
     },
-    fmposition: function(newPos, oldPos) {
-      log('setting fm to y', newPos.top)
-      var prevOffset = $(`#filemanager`).offset();
-      $(`#filemanager`).offset({left: this.clickPos.x + newPos.left, top: this.clickPos.y + newPos.top});
+    config: function(newConfig, oldConfig) {
+      if(newConfig.activeApps.length != oldConfig.activeApps.length) {
+      }
     }
   },
   methods: {
+    restoreApplicationDimensions: function() {
+      var wm = this;
+      for (var app in this.config.appPositions) {
+        log("app", app);
+        this.setDimensions(app);
+      }
+    },
+    setDimensions: function(element) {
+      log("element", element);
+      console.log($("#termDrag").offset());
+      log("stored offset", this.config.appPositions[element].left);
+      $(`#${element}`).offset({
+        left: this.config.appPositions[element].left,
+        top: this.config.appPositions[element].top
+      });
+      $(`#${element}`).css("height", this.config.appPositions[element].height);
+      $(`#${element}`).css("width", this.config.appPositions[element].width);
+    },
+    blendIn: function(element) {
+      $(`#${element}`).css("opacity", 1);
+    },
     setClickPos: function(pos) {
       this.clickPos = pos;
     },
@@ -135,11 +195,17 @@ export default {
         .removeClass("open");
     },
     setState: function() {
-      $('#app').class(this.config.state)
+      $("#app").class(this.config.state);
     },
     buildApps: function(apps) {
       log("new apps", apps, "red");
+      var wm = this;
       this.config.activeApps = apps;
+          setTimeout(function() {
+      wm.restoreApplicationDimensions();
+      wm.ready = true;
+    }, 100);
+
       this.storeConfig();
     },
     setCity: function(city) {
@@ -153,6 +219,7 @@ export default {
         this.config.activeApps = config.activeApps;
         this.config.state = config.state;
         this.config.city = config.city;
+        this.config.appPositions = config.appPositions;
       }
     },
     storeConfig: function() {
@@ -168,38 +235,26 @@ export default {
   margin: 1rem;
 }
 
-.floating {
+.application-wrapper {
+  width: 100%;
+  height: 100%;
 }
 
-.floating .application {
+.application {
+  width: 100%;
+  height: 100%;
+}
+
+.floating .draggable {
   position: absolute;
+  
+  opacity: 0;
+  transition: opacity 1s;
 }
 
-.floating #weather {
-  width: 300px;
-  height: 200px;
-  top: 20px;
-  left: 900px;
-}
-
-.floating #todo {
-  width: 300px;
-  height: 200px;
-  top: 420px;
-  left: 900px;
-}
-
-.floating #terminal {
-  width: 500px;
-  height: 220px;
-  top: 500px;
-  left: 100px;
-}
-.floating #fm {
-  width: 300px;
-  height: 250px;
-  top: 20px;
-  left: 50px;
+.floating .draggable {
+padding: 5rem;
+  background-color: var(--dark);
 }
 
 .fullscreen {
@@ -222,7 +277,7 @@ export default {
 }
 
 #settingsIcon i {
-  transition: 1s ease-in;
+  transition: 0.1s ease-in;
 }
 
 .open i {

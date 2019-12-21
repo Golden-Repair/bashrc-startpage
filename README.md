@@ -12,6 +12,8 @@ This is a start page heavily inspired by my linux desktop setup, where I mainly 
 
 The Idea is to act like an os with a desktop environment, a file manager and open programs that are then arranged on the page trough a Window Manager (currently tiling or floating).
 
+In the floating layout (which is the default atm), you can drag the windows around by holding 'shift' on your keyboard and dragging the window. window locations are stored in the config and should be persistent upon refreshing the page. This way you can arrange your windows in a way that you like.
+
 Directories in the file system resemble bookmark categories and Files are named links to your most visited webpages.
 
 
@@ -50,11 +52,20 @@ The status bar at the bottom displays the path of the current working directory 
 
 ### weather 
 
-Just a tiny applet that displays local weather information. Currently the city is hardcoded, which will be changed in the very near future.
+Just a tiny applet that displays local weather information. you can set your
+city in the settings widget.
+
+###  todo
+
+a tiny todo tracker. todos store a name and a description of a task, as well as
+0 to several tags for marking tasks that belong to the same category (work, private,
+university, some project, whatever). You can color-code the tags by clicking on them and selecting a color in the color strip.
+
+Task completion is going to be implemented within the next few days.
 
 ### Settings
 
-The wheel on the bottom left of the page opens the settings. you can select which applications you would like to have open uppon startup.
+The wheel on the bottom left of the page opens the settings. you can select which applications you would like to have open upon startup.
 
 More settings and customizability options will be added in the near future
 
@@ -62,14 +73,11 @@ More settings and customizability options will be added in the near future
 
 current todos, each with priority in parenthesis
 
-- set city via settings applet and store to local storage (1)
 - add window manager state selection to settings (1)
-- implement todo widget (2)
+- finish todo widget (2)
 - implement filetree widget (9)
 - implement colorscheme framework (3)
 - implement colorscheme selection & generation (4)
-- implement drag & drop in floating state (5)
-- save window positions in floating state to config (5)
 - implement split layouts other than just vertical split for tiling state (5)
 
 ### General remarks

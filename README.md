@@ -3,6 +3,10 @@
 
 ![demo](https://github.com/cbrasser/bashrc/blob/master/demo_screen.png)
 
+# Live version
+
+https://cbrasser.github.io/
+
 ## Functionality
 
 The basic principle of this startpage is to act as a bookmark repository.

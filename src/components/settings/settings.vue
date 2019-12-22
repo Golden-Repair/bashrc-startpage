@@ -73,6 +73,13 @@
             <span class="app-icon"><i class="fas fa-clipboard-list"></i></span>
           </label>
         </div>
+        <div class="col">
+          <h3>Window Manager</h3>
+          <span>Floating</span>
+          <input type ='radio' id='floating' value='floating' v-model='wmState'>
+           <span>Tiled</span>
+          <input type ='radio' id='tiled' value='tiled' v-model='wmState'>
+          </div>
       </div>
     </div>
     <div id="submenu-term" class="tab-content"></div>
@@ -94,7 +101,8 @@ export default {
     return {
       activeApps: [],
       city: "",
-      activeTab: "submenu-view"
+      activeTab: "submenu-view",
+      wmState: '',
     };
   },
   props: {},
@@ -113,6 +121,9 @@ export default {
     activeApps: function(newList, oldList) {
       log("new active apps", newList);
       this.$emit("appsChanged", newList);
+    },
+    wmState: function(newState, oldState) {
+      this.$emit('stateChanged', newState)
     },
     city: function(newCity, oldCity) {
       log('got new city', newCity, 'red')

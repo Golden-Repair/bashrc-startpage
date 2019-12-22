@@ -74,7 +74,6 @@ More settings and customizability options will be added in the near future
 current todos, each with priority in parenthesis
 
 - add window manager state selection to settings (1)
-- finish todo widget (2)
 - implement filetree widget (9)
 - implement colorscheme framework (3)
 - implement colorscheme selection & generation (4)

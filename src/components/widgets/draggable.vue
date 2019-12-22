@@ -2,6 +2,7 @@
   <div class="draggable"
     v-on:mousedown="dragStart"
     v-on:mouseup="dragEnd"
+    :class="active ? 'active' : 'inactive'"
   >
   <slot name='application'></slot>
   </div>
@@ -14,7 +15,6 @@ export default {
   name: "draggable",
   data: function() {
     return {
-            active: false,
             startX: 0,
             startY: 0,
         
@@ -23,12 +23,14 @@ export default {
   },
   props: {
     component: String,
+    active: Boolean,
   },
   watch: {
    
   },
   methods: {
    dragStart: function(e) {
+     if (!this.active) return;
        if(!e.shiftKey) return;
        this.startX = e.clientX;
        this.startY = e.clientY;
@@ -37,9 +39,10 @@ export default {
        window.onmousemove = function (event) {
             wm.$emit('input', {left: event.movementX, top: event.movementY, component: wm.component})
        }
-
    },
    dragEnd: function(e) {
+          if (!this.active) return;
+
                window.onmousemove = function (event) {
        }
    },
@@ -52,5 +55,13 @@ export default {
 </script>
 
 <style>
+
+.inactive {
+  position: relative;
+}
+
+.active {
+
+}
 
 </style>

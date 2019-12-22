@@ -1,8 +1,9 @@
 <template>
   <div id="app" :class="config.state">
     <draggable
-    ref='fmDrag'
+      ref="fmDrag"
       v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+      v-bind:active="this.config.state == 'floating' ? true : false"
       id="fmDrag"
       component="fmDrag"
       v-model="drag"
@@ -20,6 +21,8 @@
 
     <draggable
       v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+            v-bind:active="this.config.state == 'floating' ? true : false"
+
       id="termDrag"
       component="termDrag"
       v-model="drag"
@@ -32,6 +35,8 @@
     </draggable>
     <draggable
       v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+            v-bind:active="this.config.state == 'floating' ? true : false"
+
       id="weatherDrag"
       component="weatherDrag"
       v-model="drag"
@@ -48,6 +53,8 @@
     </draggable>
     <draggable
       v-bind:style="{ opacity: this.ready ? 1 : 0 }"
+            v-bind:active="this.config.state == 'floating' ? true : false"
+
       id="todoDrag"
       component="todoDrag"
       v-model="drag"
@@ -66,6 +73,7 @@
     <settings
       v-on:appsChanged="buildApps"
       v-on:cityChanged="setCity"
+      v-on:stateChanged="setState"
       id="settings"
       ref="settings"
     ></settings>
@@ -129,20 +137,20 @@ export default {
   mounted: function() {},
   watch: {
     drag: function(drag, oldPos) {
-      log('component', drag.component, 'blue')
+      if (this.config.state == 'floating');
+      log("component", drag.component, "blue");
       var prevOffset = $(`#${drag.component}`).offset();
       $(`#${drag.component}`).offset({
         left: prevOffset.left + drag.left,
         top: prevOffset.top + drag.top
       });
       this.config.appPositions[drag.component].left =
-        prevOffset.left + drag.left
-        this.config.appPositions[drag.component].top =
-          prevOffset.top + drag.top;
+        prevOffset.left + drag.left;
+      this.config.appPositions[drag.component].top = prevOffset.top + drag.top;
       this.storeConfig();
     },
     config: function(newConfig, oldConfig) {
-      if(newConfig.activeApps.length != oldConfig.activeApps.length) {
+      if (newConfig.activeApps.length != oldConfig.activeApps.length) {
       }
     }
   },
@@ -150,20 +158,37 @@ export default {
     restoreApplicationDimensions: function() {
       var wm = this;
       for (var app in this.config.appPositions) {
-        log("app", app);
         this.setDimensions(app);
       }
     },
     setDimensions: function(element) {
       log("element", element);
-      console.log($("#termDrag").offset());
-      log("stored offset", this.config.appPositions[element].left);
-      $(`#${element}`).offset({
-        left: this.config.appPositions[element].left,
-        top: this.config.appPositions[element].top
-      });
-      $(`#${element}`).css("height", this.config.appPositions[element].height);
-      $(`#${element}`).css("width", this.config.appPositions[element].width);
+      if (this.config.state == "floating") {
+        console.log($("#termDrag").offset());
+        log("stored offset", this.config.appPositions[element].left);
+        $(`#${element}`).offset({
+          left: this.config.appPositions[element].left,
+          top: this.config.appPositions[element].top
+        });
+        $(`#${element}`).css(
+          "height",
+          this.config.appPositions[element].height
+        );
+        $(`#${element}`).css(
+          "width",
+          this.config.appPositions[element].width
+        );
+      } else {
+        log('state','tiled', 'red')
+        $(`#${element}`).offset({
+          left: '0',
+          top: '0',
+        });
+        $(`.tiled #${element}`).css(
+          "height", 'unset');
+        $(`.tiled #${element}`).css(
+          "width",'unset');
+      }
     },
     blendIn: function(element) {
       $(`#${element}`).css("opacity", 1);
@@ -194,17 +219,14 @@ export default {
         .css("bottom", 0)
         .removeClass("open");
     },
-    setState: function() {
-      $("#app").class(this.config.state);
-    },
     buildApps: function(apps) {
       log("new apps", apps, "red");
       var wm = this;
       this.config.activeApps = apps;
-          setTimeout(function() {
-      wm.restoreApplicationDimensions();
-      wm.ready = true;
-    }, 100);
+      setTimeout(function() {
+        wm.restoreApplicationDimensions();
+        wm.ready = true;
+      }, 100);
 
       this.storeConfig();
     },
@@ -212,9 +234,15 @@ export default {
       this.config.city = city;
       this.storeConfig();
     },
+    setState: function(state) {
+      log('setting state', state, 'blue')
+      this.config.state = state;
+      this.restoreApplicationDimensions()
+      this.storeConfig();
+    },
     getConfig: function() {
       var config = JSON.parse(window.localStorage.getItem("config"));
-      if(!config) return;
+      if (!config) return;
       log("got config", config.activeApps);
       if (config.activeApps) {
         this.config.activeApps = config.activeApps;
@@ -248,13 +276,14 @@ export default {
 
 .floating .draggable {
   position: absolute;
-  
+
   opacity: 0;
   transition: opacity 1s;
 }
 
-.floating .draggable {
-padding: 5rem;
+
+.draggable {
+  padding: 5rem;
   background-color: var(--dark);
 }
 

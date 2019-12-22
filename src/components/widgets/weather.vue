@@ -65,9 +65,9 @@ export default {
     },
     callAPI: function(city, callback) {
       $.getJSON(
-        `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&APPID=12689f13c28873a6559ba14ec01f3392`,
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&APPID=12689f13c28873a6559ba14ec01f3392`,
         function(json) {
-          console.log(JSON.stringify(json));
+          //console.log(JSON.stringify(json));
           callback(json);
         }
       );
@@ -85,7 +85,6 @@ export default {
   computed: {},
   mounted: function() {
     this.getWeatherData(this.city);
-    log("weather", this.weatherData.weather, "red");
   }
 };
 </script>

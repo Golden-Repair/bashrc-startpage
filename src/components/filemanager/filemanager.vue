@@ -1,21 +1,28 @@
 <template>
-  <div id="filemanager" tabindex=0 autofocus ref='filemanager'
-        v-on:keydown.37.prevent="leave"
-        v-on:keydown.40.prevent="down"
-        v-on:keydown.38.prevent="up"
-        v-on:keydown.39.prevent="enter"
-        v-on:keydown.13.prevent="enter"
-        v-on:keyup.65='add'
-        v-on:keydown.68='remove'
-        v-on:keydown.80='paste'
-        v-on:keydown.27.prevent='cancel'
+  <div
+    id="filemanager"
+    tabindex="0"
+    ref="filemanager"
+    v-on:keydown.37.prevent="leave"
+    v-on:keydown.40.prevent="down"
+    v-on:keydown.38.prevent="up"
+    v-on:keydown.39.prevent="enter"
+    v-on:keydown.13.prevent="enter"
+    v-on:keydown.191.prevent=""
+    v-on:keyup.70="onInput('touch')"
+    v-on:keyup.78="onInput('mkdir')"
+    v-on:keyup.191="onInput('search')"
+    v-on:keyup.59="onInput('cd')"
+    v-on:keydown.68="remove"
+    v-on:keydown.80="paste"
+    v-on:keydown.27.prevent="cancel"
   >
     <div class="wrapper">
       <ul>
         <li
           v-for="(node, index) in content"
           v-bind:key="index"
-          v-on:click="enter"
+          v-on:click="enterClicked(node)"
           v-bind:class="{
             selected: index == selected,
             marked: markedRemove.indexOf(index) != -1,
@@ -26,27 +33,30 @@
           {{ node.name }}
         </li>
       </ul>
-      <div class="fm-prompt-wrapper" v-if="dialogStage !=0">
-        <prompt 
-        v-bind:label="dialog[dialogStage].label"
-        v-bind:type="dialog[dialogStage].type"
-        v-bind:placeholder="dialog[dialogStage].placeholder"
-        v-on:submit="onSubmit"
-        v-model="input"
-        ref="filePrompt"></prompt>
+      <div class="fm-prompt-wrapper" v-if="promptActive">
+        <prompt
+          v-bind:label="type"
+          type="text"
+          v-bind:placeholder="placeholders[type]"
+          v-on:submit="onSubmit"
+          v-model="input"
+          ref="filePrompt"
+        ></prompt>
       </div>
       <div class="status-bar">
-        <span class="position">{{selected+1}}/{{content.length}}</span>
+        <span class="position">{{ selected + 1 }}/{{ content.length }}</span>
         <span class="wd">{{ dirname }}</span>
+        <span class='filter'
+        v-if='filter.length > 0'
+        >filter: {{filter}}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-
 import { log } from "../logger";
-import prompt from './prompt'
+import prompt from "./prompt";
 
 export default {
   name: "filemanager",
@@ -54,21 +64,23 @@ export default {
     return {
       wd: {},
       selected: 0,
-      dialogStage : 0,
-      picked: 'directory',
-      dialog: {
-          0: {type: '', label: '', placeholder: ''},
-          1: {type: 'text', label: 'add', placeholder: 'directory/file (d/f)'},
-          2: {type: 'text', label: 'name', placeholder: 'name'},
-          3: {type: 'text', label: 'url', placeholder: 'url'},
-        },
-        input: "", 
-        modelCache: {type: '', name: ''},
-        markedRemove: [],
-    }
+      promptActive: false,
+      picked: "directory",
+      type: "",
+      filter: '',
+      placeholders: {
+        touch: "filename url",
+        mkdir: "name",
+        search: "string",
+        cd: "directory"
+      },
+      input: "",
+      modelCache: { type: "", name: "" },
+      markedRemove: []
+    };
   },
   components: {
-      prompt,
+    prompt
   },
   props: {
     fs: Object
@@ -76,102 +88,112 @@ export default {
   watch: {},
   mounted: function() {
     this.wd = this.fs.getRoot();
-    this.$refs.filemanager.focus()
+    this.$refs.filemanager.focus();
   },
   methods: {
     open: function(url) {
-        if(this.dialogStage != 0) return;
+      if (this.promptActive) return;
       window.open(url, "_blank");
     },
     leave: function() {
-        if(this.dialogStage != 0) return;
-        var res = this.fs.cd(this.wd, '..')
-        if (res.directory){
-            this.wd = res.directory;
-        }
-        this.selected = 0;
+      if (this.promptActive) return;
+      var res = this.fs.cd(this.wd, "..");
+      if (res.directory) {
+        this.wd = res.directory;
+      }
+      this.selected = 0;
     },
     enter: function() {
-        if(this.dialogStage != 0) return;
-        var node = this.content[this.selected]
-    if (node.type == "directory") {
+      if (this.promptActive) return;
+      var node = this.content[this.selected];
+      if (node.type == "directory") {
         var res = this.fs.cd(this.wd, node.name);
-        if (res.directory){
-            this.wd = res.directory;
-            this.selected = 0;
+        if (res.directory) {
+          this.wd = res.directory;
+          this.selected = 0;
         }
       } else if (node.type == "file") {
         window.open(node.url, "_blank");
       }
-
-        
+    },
+    enterClicked: function(node) {
+      if (node.type == "directory") {
+        var res = this.fs.cd(this.wd, node.name);
+        if (res.directory) {
+          this.wd = res.directory;
+          this.selected = 0;
+        }
+      } else if (node.type == "file") {
+        window.open(node.url, "_blank");
+      }
     },
     down: function() {
-        if(this.dialogStage != 0) return;
-        this.selected = (this.selected + 1) % this.content.length
+      if (this.promptActive) return;
+      this.selected = (this.selected + 1) % this.content.length;
     },
     up: function() {
-        if(this.dialogStage != 0) return;
-        this.selected = this.selected > 0 ? this.selected -1 : this.content.length-1;
+      if (this.promptActive) return;
+      this.selected =
+        this.selected > 0 ? this.selected - 1 : this.content.length - 1;
     },
-    add: function() {
-        if(this.dialogStage == 0){
-        this.dialogStage = 1;
-        }
-    },
-    remove: function(){
-        if(this.dialogStage != 0) return
+    onInput: function(type) {
 
-        if(this.markedRemove.indexOf(this.selected) == -1){
-            this.markedRemove.push(this.selected);
-        } else {
-            this.markedRemove.splice(this.markedRemove.indexOf(this.selected),1);
-        }
+      if(this.promptActive) return;
+      this.type = type;
+      this.promptActive = true;
     },
-    cancel: function(){
-        this.dialogStage = 0;
-        this.$refs.filemanager.focus()
+    remove: function() {
+      if (this.promptActive) return;
+
+      if (this.markedRemove.indexOf(this.selected) == -1) {
+        this.markedRemove.push(this.selected);
+      } else {
+        this.markedRemove.splice(this.markedRemove.indexOf(this.selected), 1);
+      }
+    },
+    cancel: function() {
+      this.promptActive = false;
+      this.filter = ''
+      this.$refs.filemanager.focus();
     },
     paste: function() {
-        for(var i= 0; i<this.markedRemove.length;i++){
-            var index = this.markedRemove[i];
-            var node = this.content[index];
-            if(node.type == 'file') {
-                this.fs.rm(this.wd, node.name)
-            } else if (node.type == 'directory') {
-                this.fs.rmdir(this.wd, node.name)
-            }
+      for (var i = 0; i < this.markedRemove.length; i++) {
+        var index = this.markedRemove[i];
+        var node = this.content[index];
+        if (node.type == "file") {
+          this.fs.rm(this.wd, node.name);
+        } else if (node.type == "directory") {
+          this.fs.rmdir(this.wd, node.name);
         }
-        this.markedRemove = []
-        this.selected = 0;
+      }
+      this.markedRemove = [];
+      this.selected = 0;
     },
-    onSubmit: function(value){
-        if (this.dialogStage == 1) {
-            if (value != 'd' && value != 'f') {
-                return;
-            }
-                this.modelCache.type = value;
-                this.nextStage()
-        } else if (this.dialogStage == 2) {
-            this.modelCache.name = value;
-            if (this.modelCache.type == 'd'){
-                this.fs.mkdir(this.wd, this.modelCache.name);
-                this.dialogStage =0;
-                this.modelCache = {type: '', name: ''}
-            } else {
-                this.nextStage();
-            }
-        } else if (this.dialogStage == 3) {
-            this.fs.touch(this.wd, [this.modelCache.name, value])
-            this.dialogStage =0;
-            this.modelCache = {type: '', name: ''}
-        }
-        
+    onSubmit: function(value) {
+      switch (this.type) {
+        case "touch":
+          this.fs.touch(this.wd, value.split(" "));
+          break;
+        case "mkdir":
+          this.fs.mkdir(this.wd, value);
+          break;
+        case "search":
+          this.filter = value
+          break;
+        case "cd":
+        var node = this.content.filter(n => n.name == value)[0];
+        this.enterClicked(node);
+          break;
+      }
+      this.type = ''
+      this.promptActive = false;
+      this.$refs.filemanager.focus();
+
+
     },
     nextStage: function() {
-        this.dialogStage += 1;
+      this.dialogStage += 1;
     }
-
   },
   computed: {
     content: function() {
@@ -192,6 +214,9 @@ export default {
           url: f.getUrl()
         }))
       );
+      if (this.filter.length > 0) {
+        return content.filter(n => n.name.indexOf(this.filter) != -1)
+      }
       return content;
     },
     dirname: function() {
@@ -206,7 +231,7 @@ export default {
 
 <style>
 #arrow-capture {
-    display: none;
+  display: none;
 }
 
 #filemanager {
@@ -228,10 +253,21 @@ ul {
 }
 
 .directory {
+  cursor: pointer;
   color: var(--cyan);
 }
 .file {
-  color: var(--green);
+  cursor: pointer;
+  color: var(--yellow);
+}
+
+.directory.selected {
+  background-color: var(--cyan);
+  color: var(--dark);
+}
+.file.selected {
+    background-color: var(--yellow);
+  color: var(--dark);
 }
 
 .status-bar {
@@ -243,29 +279,28 @@ ul {
   background-color: var(--red);
 }
 
-.selected {
-  background-color: var(--blue);
+.filter {
+  float: right;
+}
+
+
+.marked {
+  background-color: var(--red);
   color: var(--dark);
 }
-.marked {
-    background-color: var(--red);
-    color: var(--dark);
-}
 .wd {
-    margin-left: 1rem;
+  margin-left: 1rem;
 }
 .fm-prompt-wrapper {
-    position:absolute;
-    bottom:22px;
-    width: 100%;
-    height: 22px;
-    margin: auto;
-    overflow: hidden;
-
+  position: absolute;
+  bottom: 22px;
+  width: 100%;
+  height: 22px;
+  margin: auto;
+  overflow: hidden;
 }
 .down {
-    color: var(--pink);
-    margin: auto;
+  color: var(--pink);
+  margin: auto;
 }
-
 </style>

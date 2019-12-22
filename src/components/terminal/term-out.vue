@@ -18,7 +18,6 @@ export default {
   },
   watch: {
     out: function(newVal, oldVal) {
-      console.log("got new out values: "+newVal)
     }
   }
 };

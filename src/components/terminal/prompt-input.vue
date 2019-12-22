@@ -48,7 +48,6 @@ export default {
   },
   methods: {
     onSubmit(command) {
-      log('input: submitting', $('input[name="cmd"]').val())
       this.$emit("submit", $('input[name="cmd"]').val());
       $('input[name="cmd"]').val("");
 
@@ -83,7 +82,6 @@ export default {
         } else {
           this.input = this.input.concat(" ");
         }
-        log("accepted suggestion", this.termSuggestions[this.index]);
         this.$emit("input", this.input);
 
         this.index = -1;
@@ -111,7 +109,6 @@ export default {
   watch: {
     termSuggestions: function() {
       //this.sugg_obj.suggestions = this.suggestions;
-      log("got new suggestions", this.suggestions, "blue");
     }
   }
 };

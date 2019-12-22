@@ -146,7 +146,7 @@ export default {
             return "Please enter a valid search query";
           }
         },
-        open: function(fs, args) {
+        open: function(fs,wd, args) {
           log("open", args);
           var res = newResponse();
           if (!args[0]) {

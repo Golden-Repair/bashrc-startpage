@@ -99,18 +99,19 @@ export default {
   name: "settings",
   data: function() {
     return {
-      activeApps: [],
       city: "",
       activeTab: "submenu-view",
-      wmState: '',
     };
   },
-  props: {},
+  props: {
+          activeApps: Array,
+          wmState: String,
+
+  },
   watch: {
     activeTab: function(newActive, prevActive) {
       $(`#${prevActive}`).toggle();
       $(`#${newActive}`).toggle();
-      log("test", prevActive.substr(prevActive.indexOf("-") + 1));
       $(
         `#button-${prevActive.substr(prevActive.indexOf("-") + 1)}`
       ).toggleClass("tab-active");
@@ -119,27 +120,22 @@ export default {
       );
     },
     activeApps: function(newList, oldList) {
-      log("new active apps", newList);
       this.$emit("appsChanged", newList);
     },
     wmState: function(newState, oldState) {
       this.$emit('stateChanged', newState)
     },
     city: function(newCity, oldCity) {
-      log('got new city', newCity, 'red')
       this.$emit('cityChanged', newCity)
     }
   },
   methods: {
     openTab: function(value) {
-      log("open tab", value);
       this.activeTab = value;
     },
     updateTerminal: function(value) {
-      log("updateTerm", value);
     },
     updateFm: function(value) {
-      log("updateFm", value);
     }
   },
   computed: {}
@@ -165,7 +161,6 @@ input[type="checkbox"] {
 .app-icon {
   margin-right: 1rem;
   margin-bottom: 2rem;
-  background-color: var(--white);
   padding: 1rem;
   border-radius: 5px;
 }

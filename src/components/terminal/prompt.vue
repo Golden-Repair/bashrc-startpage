@@ -45,7 +45,6 @@ export default {
       this.$emit("input", value);
     },
     onSubmit: function(value) {
-      log('prompt: got input', value)
       this.$emit("submit", value);
     },
   },

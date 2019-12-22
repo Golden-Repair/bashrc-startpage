@@ -74,6 +74,8 @@
       v-on:appsChanged="buildApps"
       v-on:cityChanged="setCity"
       v-on:stateChanged="setState"
+      v-bind:activeApps='this.config.activeApps'
+      v-bind:wmState='this.config.state'
       id="settings"
       ref="settings"
     ></settings>
@@ -109,7 +111,8 @@ export default {
           termDrag: { left: 100, top: 500, width: 300, height: 200 },
           todoDrag: { left: 900, top: 420, width: 500, height: 220 },
           weatherDrag: { left: 900, top: 20, width: 300, height: 250 }
-        }
+        },
+        numCols: 1,
       },
       drag: { left: 0, top: 0, component: "" },
       clickPos: { x: 0, y: 0 },
@@ -131,22 +134,32 @@ export default {
     var wm = this;
     setTimeout(function() {
       wm.restoreApplicationDimensions();
+      wm.setColCount();
+
       wm.ready = true;
     }, 100);
   },
   mounted: function() {},
   watch: {
-    drag: function(drag, oldPos) {
-      if (this.config.state == 'floating');
-      log("component", drag.component, "blue");
+    drag: function(drag, oldDrag) {
+      if (this.config.state != 'floating') return;
+      if (drag.type =='resize') {
+        this.config.appPositions[drag.component].width += drag.left;
+        this.config.appPositions[drag.component].height += drag.top;
+        $(`#${drag.component}`).css('width', this.config.appPositions[drag.component].width);
+        $(`#${drag.component}`).css('height', this.config.appPositions[drag.component].height);
+
+      } else {
       var prevOffset = $(`#${drag.component}`).offset();
-      $(`#${drag.component}`).offset({
-        left: prevOffset.left + drag.left,
-        top: prevOffset.top + drag.top
-      });
+
       this.config.appPositions[drag.component].left =
-        prevOffset.left + drag.left;
-      this.config.appPositions[drag.component].top = prevOffset.top + drag.top;
+        Math.max(0, prevOffset.left + drag.left);
+      this.config.appPositions[drag.component].top = Math.max(0,prevOffset.top + drag.top);
+            $(`#${drag.component}`).offset({
+        left: this.config.appPositions[drag.component].left,
+        top: this.config.appPositions[drag.component].top
+      });
+      }
       this.storeConfig();
     },
     config: function(newConfig, oldConfig) {
@@ -155,20 +168,33 @@ export default {
     }
   },
   methods: {
+    setColCount: function() {
+      var cols = '';
+      for(var i =0; i< this.config.numCols; i++) {
+        cols = cols.concat('1fr ');
+      }
+      $('#app').css('grid-template-columns',cols);
+    },
     restoreApplicationDimensions: function() {
-      var wm = this;
+      if(this.config.state =='tiled') {
+        this.config.numCols = Math.max(1,Math.ceil(this.config.activeApps.length / 2));
+      }
       for (var app in this.config.appPositions) {
         this.setDimensions(app);
       }
+      if (this.config.activeApps.length % 2 !=0){
+        $(`#app div:first-child`).css('grid-column',`auto / span ${this.config.numCols}`)
+      } else {
+        $(`#app div:first-child`).css('grid-column',`auto`)
+
+      }
     },
     setDimensions: function(element) {
-      log("element", element);
       if (this.config.state == "floating") {
-        console.log($("#termDrag").offset());
-        log("stored offset", this.config.appPositions[element].left);
-        $(`#${element}`).offset({
-          left: this.config.appPositions[element].left,
-          top: this.config.appPositions[element].top
+
+        $(`#${element}`).css({
+          'left': this.config.appPositions[element].left,
+          'top': this.config.appPositions[element].top
         });
         $(`#${element}`).css(
           "height",
@@ -179,14 +205,13 @@ export default {
           this.config.appPositions[element].width
         );
       } else {
-        log('state','tiled', 'red')
-        $(`#${element}`).offset({
+        $(`#${element}`).css({
           left: '0',
           top: '0',
         });
-        $(`.tiled #${element}`).css(
+        $(` #${element}`).css(
           "height", 'unset');
-        $(`.tiled #${element}`).css(
+        $(` #${element}`).css(
           "width",'unset');
       }
     },
@@ -225,6 +250,8 @@ export default {
       this.config.activeApps = apps;
       setTimeout(function() {
         wm.restoreApplicationDimensions();
+              wm.setColCount();
+
         wm.ready = true;
       }, 100);
 
@@ -262,6 +289,13 @@ export default {
 #app {
   flex-grow: 1;
   margin: 1rem;
+grid-template-rows:repeat(auto-fit, minmax(400px, 1fr));
+}
+
+
+
+*:focus {
+  outline: none;
 }
 
 .application-wrapper {
@@ -280,7 +314,6 @@ export default {
   opacity: 0;
   transition: opacity 1s;
 }
-
 
 .draggable {
   padding: 5rem;

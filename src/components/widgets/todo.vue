@@ -1,5 +1,6 @@
 <template>
-  <div class="todo-wrapper">
+  <div class="todo-wrapper" 
+  >
     <div class='todo-title'>todo</div>
     <div class="todo-list">
     <div class='todo-entry'
@@ -57,6 +58,7 @@ export default {
           tags: [],
       },
       input: '',
+      inputActive: false,
       label: 'add',
       placeholder: 'task [tag, tog]: Do this thing finally',
       priority: 0,
@@ -99,11 +101,9 @@ export default {
       localStorage.setItem("todo", JSON.stringify(this.todos));
     },
     getTagColor: function(tag) {
-      log('gettagcolor', tag, 'red')
       return this.todos.tags[this.todos.tags.map(t => t.name).indexOf(tag)].color;
     },
     setTagColor: function(color) {
-      log('settagcolor', color, 'red')
       this.todos.tags[this.todos.tags.map(t => t.name).indexOf(this.selectedTag)].color = color;
       this.storeToLocalStorage()
           this.colorPickerActive = false;
@@ -114,7 +114,6 @@ export default {
       this.colorPickerActive = true;
     },
     addTask: function() {
-        log('addTask', this.input, 'red')
         var input_both = this.input.split(":");
         var name = input_both[0].split(' ')[0]
         var task = { name: name, description: input_both[1], tags: []};
@@ -122,10 +121,8 @@ export default {
         var tags = input_both[0].split('[')[1];
         if (tags){
             tags = tags.substr(0, tags.length-1);
-            console.log(tags)
 
             tags = tags.split(/,\s*/);
-            log('tags', tags.length)
             task.tags = tags;
             this.addTagsIfNew(task.tags)
         }

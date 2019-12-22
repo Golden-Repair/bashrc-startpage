@@ -2,7 +2,7 @@
   <ul id="suggestions" v-if="show">
     <li
     v-for="(sug, index) in this.suggestions"
-    v-bind:class="{active: index == suggestionIndex}" 
+    v-bind:class="{activeSuggestion: index == suggestionIndex}" 
     v-bind:key=index 
     v-on:click="$emit('select', sug)" 
     class="suggestion"
@@ -36,10 +36,8 @@ export default {
   computed: {},
   watch: {
     suggestions: function(newVal, oldVal) {
-      log("suggestions: got new suggestions", this.suggestions, 'blue');
     },
     suggestionIndex: function (newVal, oldVal) {
-        log('suggestions: next suggestion', this.suggestionIndex, 'blue')
     }
   }
 };
@@ -67,7 +65,7 @@ li {
   padding-left: 0;
 }
 
-.active {
+.activeSuggestion {
     background-color: var(--pink);
     color: var(--dark)
 }

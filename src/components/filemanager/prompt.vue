@@ -1,8 +1,11 @@
 <template>
-    <div v-on:submit="onSubmit">
+    <div v-on:keydown.13.prevent.stop="onSubmit">
         <span class='label'>{{label}}</span>
         <input ref="input" v-model="input" 
-                v-on:keydown.13.prevent="onSubmit" :type="type" :placeholder="placeholder" id="value"/>
+                v-on:keydown.13.prevent="onSubmit"
+                :type="type" 
+                :placeholder="placeholder" 
+                id="value"/>
     </div>
 </template>
 

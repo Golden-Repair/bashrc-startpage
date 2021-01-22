@@ -55,14 +55,12 @@
 </template>
 
 <script>
-import { log } from "../logger";
 import prompt from "./prompt";
 
 export default {
   name: "filemanager",
   data: function() {
     return {
-      wd: {},
       selected: 0,
       promptActive: false,
       picked: "directory",
@@ -82,12 +80,8 @@ export default {
   components: {
     prompt
   },
-  props: {
-    fs: Object
-  },
   watch: {},
   mounted: function() {
-    this.wd = this.fs.getRoot();
     this.$refs.filemanager.focus();
   },
   methods: {
@@ -196,9 +190,15 @@ export default {
     }
   },
   computed: {
+    fs() {
+      return this.$store.state.fileTree;
+    },
+    wd() {
+      return this.$store.state.workingDirectory;
+    },
     content: function() {
       var content = [];
-      if (!this.wd.getChildren) {
+      if (!this.wd || !this.wd.getChildren()) {
         return content;
       }
       content = content.concat(
@@ -220,7 +220,7 @@ export default {
       return content;
     },
     dirname: function() {
-      if (!this.wd.getPath) {
+      if (!this.wd || !this.wd.getPath()) {
         return "";
       }
       return this.wd.getPath();

@@ -47,7 +47,6 @@ export default {
   },
   mounted: function () {
     this.buildCommands();
-    console.log([this.commands]);
   },
   methods: {
     onCommand: function (input) {

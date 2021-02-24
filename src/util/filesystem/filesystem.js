@@ -1,7 +1,7 @@
-import {newDirectory, dirFromJSON} from './directory.js'
-import {newFile, fileFromJSON} from './file.js'
+import { newDirectory, dirFromJSON } from './directory.js'
+import { newFile, fileFromJSON } from './file.js'
 import { newResponse } from '../../components/response.js'
-import {log} from '../../components/logger'
+import { log } from '../../components/logger'
 import { formatWithOptions } from 'util';
 
 
@@ -16,9 +16,12 @@ export class FileSystem {
 
 		this.root = newDirectory('~', null, true);
 		if (config) {
+			console.log('constructing filesystem from store')
 			this.root.children = config.children.map(c => dirFromJSON(this.root, c));
 			this.root.files = config.files.map(f => fileFromJSON(this.root, f));
-		}	
+		} else {
+			console.log('no file system found, creating new');
+		}
 	}
 
 	getRoot() {
@@ -34,7 +37,7 @@ export class FileSystem {
 	}
 
 	removeTrailingNode(path) {
-		return path.substr(path.indexOf(this.separator)+1)
+		return path.substr(path.indexOf(this.separator) + 1)
 	}
 
 	/*
@@ -45,20 +48,20 @@ export class FileSystem {
 	TODO: Fix how we get nodes and files
 	*/
 	getNode(dir, path) {
-		log('getNode: ',`${dir.getName()} - ${path}`)
+		log('getNode: ', `${dir.getName()} - ${path}`)
 
 		// path is absolute, start search at root and remove root at start of path
 		if (this.isAbsolutePathExp.test(path)) {
 			return this.getNode(this.root, this.removeTrailingNode(path))
 		} else
-		// path does not contain separator, so it only contains a name
-		// -> path is direct name
-		if (path.indexOf(this.separator) == -1) {
-			if(path.length ==0){
-				return dir;
+			// path does not contain separator, so it only contains a name
+			// -> path is direct name
+			if (path.indexOf(this.separator) == -1) {
+				if (path.length == 0) {
+					return dir;
+				}
+				return dir.getRelative(path);
 			}
-			return dir.getRelative(path);
-		}  
 
 		// neither direct name nor absolute 
 		// -> get first node in path, restart search in first node in path with cut-off path
@@ -71,13 +74,13 @@ export class FileSystem {
 			return this[command](directory, args);
 		} catch (e) {
 			console.log(e);
-			
+
 		}
 	}
 
 
 
-// ------------------------- BASIC FILE SYSTEM COMMANDS ------------------------
+	// ------------------------- BASIC FILE SYSTEM COMMANDS ------------------------
 
 
 	ls(dir, args) {
@@ -87,32 +90,32 @@ export class FileSystem {
 
 		var res = newResponse();
 		res.dirs = node.getChildrenNames();
-		res.files = node.getFiles().map(f => ({"name": f.getName(), "url": f.getUrl()}));
+		res.files = node.getFiles().map(f => ({ "name": f.getName(), "url": f.getUrl() }));
 		return res;
 	}
 
 	cd(dir, args) {
 		log('cd', `${dir} - ${args}`, 'green')
 		var res = newResponse()
-		if(!Array.isArray(args)){
+		if (!Array.isArray(args)) {
 			args = args.split(' ')
 		}
-		if(args[0]) {
-			var d = this.getNode(dir,args[0])
-			if(!d){
-				res.messages.push({"type": "error", "value":`cd: No such directory: ${args[0]}`});
+		if (args[0]) {
+			var d = this.getNode(dir, args[0])
+			if (!d) {
+				res.messages.push({ "type": "error", "value": `cd: No such directory: ${args[0]}` });
 				return res;
 			}
-			log('found node',d.getName())
-			if(d.url){
-				res.messages.push({"type": "error", "value":`cd: not a directory: ${d.getName()}`});
+			log('found node', d.getName())
+			if (d.url) {
+				res.messages.push({ "type": "error", "value": `cd: not a directory: ${d.getName()}` });
 				return res;
 			}
 			res.directory = d;
 			return res;
 		}
 		// goal dir is either root or a relative dir from current dir
-		res.directory = this.getRoot() 
+		res.directory = this.getRoot()
 		return res;
 	}
 
@@ -121,57 +124,61 @@ export class FileSystem {
 		var res = newResponse();
 		// check if required args are submitted
 		if (!args[0]) {
-			res.messages.push({"type": "error", "value":"mkdir: missing operand"});
+			res.messages.push({ "type": "error", "value": "mkdir: missing operand" });
 			return res;
 		}
-		if(!Array.isArray(args)){
+		if (!Array.isArray(args)) {
 			args = args.split(' ')
 		}
 		// we always need at least a name
-		var name = args[0].substr(args[0].lastIndexOf(this.separator)+1);
+		var name = args[0].substr(args[0].lastIndexOf(this.separator) + 1);
 		log('mkdir: name', name, 'green')
-		var path = args[0].substr(0,args[0].lastIndexOf(this.separator));
+		var path = args[0].substr(0, args[0].lastIndexOf(this.separator));
 		var node = this.getNode(dir, path);
-		if(!node) {
-			res.messages.push({"type": "error",
-			 "value":`mkdir: cannnot create directory '${args}': No such file or directory`});
-			 return res;
+		if (!node) {
+			res.messages.push({
+				"type": "error",
+				"value": `mkdir: cannnot create directory '${args}': No such file or directory`
+			});
+			return res;
 		}
 		if (node.addChild(newDirectory(name, node))) {
-			return {success: true};
+			return { success: true };
 		} else {
-			res.messages.push({"type": "error", "value": `mkdir: cannot create directory '${args[0]}': File exists`});
+			res.messages.push({ "type": "error", "value": `mkdir: cannot create directory '${args[0]}': File exists` });
 			return res;
 		}
 	}
 
 	rmdir(dir, args) {
-		log("rmdir",dir + " - " + args, 'green')
+		log("rmdir", dir + " - " + args, 'green')
 		var res = newResponse();
 		// check if required args are submitted
 		if (!args[0]) {
-			res.messages.push({"type": "error", "value": 'rmdir: missing operand'});
+			res.messages.push({ "type": "error", "value": 'rmdir: missing operand' });
 			return res;
 		}
-		if(!Array.isArray(args)){
+		if (!Array.isArray(args)) {
 			args = args.split(' ')
 		}
 		var node = this.getNode(dir, args[0]);
-		if(!node) {
-			res.messages.push({"type": "error",
-			 "value":`rmdir: failed to remove '${args}': No such file or directory`});
-			return res;
-			}
-		if(node.url){
-			res.messages.push({"type": "error", "value":`rmdir: failed to remove '${node.getName()}': Not a directory`});
+		if (!node) {
+			res.messages.push({
+				"type": "error",
+				"value": `rmdir: failed to remove '${args}': No such file or directory`
+			});
 			return res;
 		}
-		if(!node.isEmpty()) {
-			res.messages.push({"type": "error", "value": `failed to remove ${node.getName()}: Directory not empty`})
+		if (node.url) {
+			res.messages.push({ "type": "error", "value": `rmdir: failed to remove '${node.getName()}': Not a directory` });
+			return res;
+		}
+		if (!node.isEmpty()) {
+			res.messages.push({ "type": "error", "value": `failed to remove ${node.getName()}: Directory not empty` })
 			return res
 		}
-		if(!node.getParent().removeChild(node.getName())) {
-			res.messages.push({"type": "error", "value": `rmdir: failed to remove ${node.getName()}: No such file or directory`})
+		if (!node.getParent().removeChild(node.getName())) {
+			res.messages.push({ "type": "error", "value": `rmdir: failed to remove ${node.getName()}: No such file or directory` })
 			return res;
 		}
 		this.storeConfigToLocalStorage()
@@ -180,24 +187,26 @@ export class FileSystem {
 	touch(dir, args) {
 		log('touch', `${dir} - ${args}`, 'purple')
 		var res = newResponse();
-		if(!Array.isArray(args)){
+		if (!Array.isArray(args)) {
 			args = args.split(' ')
 		}
 		if (!args[0] || !args[1]) {
-			res.messages.push({"type": "error", "value": "touch: missing file operand"})
+			res.messages.push({ "type": "error", "value": "touch: missing file operand" })
 			return res
 		}
-		var name = args[0].substr(args[0].lastIndexOf(this.separator)+1);
-		var path = args[0].substr(0,args[0].lastIndexOf(this.separator));
+		var name = args[0].substr(args[0].lastIndexOf(this.separator) + 1);
+		var path = args[0].substr(0, args[0].lastIndexOf(this.separator));
 
 		var node = this.getNode(dir, path);
-		if(!node) {
-			res.messages.push({"type": "error",
-			 "value":`touch: cannot touch '${args}': No such file or directory`});
-			 return res;
+		if (!node) {
+			res.messages.push({
+				"type": "error",
+				"value": `touch: cannot touch '${args}': No such file or directory`
+			});
+			return res;
 		}
-		if(!node.addFile(newFile(name, args[1], node))) {
-			res.messages.push({"type":"error", "value": `touch: cannot create file '${name}': File exists`});
+		if (!node.addFile(newFile(name, args[1], node))) {
+			res.messages.push({ "type": "error", "value": `touch: cannot create file '${name}': File exists` });
 			return res;
 		}
 		this.storeConfigToLocalStorage()
@@ -206,26 +215,28 @@ export class FileSystem {
 	rm(dir, args) {
 		log('rm', `${dir} - ${args}`, 'green')
 		var res = newResponse();
-		if(!Array.isArray(args)){
+		if (!Array.isArray(args)) {
 			args = args.split(' ')
 		}
 		if (!args[0]) {
-			res.messages.push({"type": "error", "value": "rm: missing operand"});
+			res.messages.push({ "type": "error", "value": "rm: missing operand" });
 			return res;
 		}
 
 		var file = this.getNode(dir, args[0]);
-		if(!file) {
-			res.messages.push({"type": "error",
-			 "value":`rm: cannot remove '${args}': No such file or directory`});
-			 return res;
-		}
-		if(!file.url) {
-			res.messages.push({"type": "error", "value": `rm: cannot remove '${file.getName()}: Is a directory'` });
+		if (!file) {
+			res.messages.push({
+				"type": "error",
+				"value": `rm: cannot remove '${args}': No such file or directory`
+			});
 			return res;
 		}
-		if(!file.getParent().removeFile(file.getName())) {
-			res.messages.push({"type": "error", "value": `rm: cannot remove '${file.getName()}: No such file'` });
+		if (!file.url) {
+			res.messages.push({ "type": "error", "value": `rm: cannot remove '${file.getName()}: Is a directory'` });
+			return res;
+		}
+		if (!file.getParent().removeFile(file.getName())) {
+			res.messages.push({ "type": "error", "value": `rm: cannot remove '${file.getName()}: No such file'` });
 			return res;
 		}
 	}

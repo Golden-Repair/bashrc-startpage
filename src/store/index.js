@@ -4,42 +4,45 @@ import { FileSystem } from '../util/filesystem/filesystem';
 
 Vue.use(Vuex);
 
+const getDefaultConfig = () => {
+    return {
+        apps: [
+            {
+                name: 'filemanager',
+                position: { top: 20, left: 50 },
+                dimensions: { height: 200, width: 300 },
+                visible: true,
+            },
+            {
+                name: 'terminal',
+                position: { top: 500, left: 100 },
+                dimensions: { height: 200, width: 300 },
+                visible: true,
+            },
+            {
+                name: 'todo',
+                position: { top: 420, left: 900 },
+                dimensions: { height: 220, width: 500 },
+                visible: false,
+            },
+            {
+                name: 'weather',
+                position: { top: 20, left: 900 },
+                dimensions: { height: 250, width: 300 },
+                visible: false,
+            }
+        ],
+        city: "",
+        windowState: "floating",
+        numCols: 1,
+    };
+}
 
 const store = new Vuex.Store({
     state: {
         fileTree: undefined,
         workingDirectory: undefined,
-        config: {
-            apps: [
-                {
-                    name: 'filemanager',
-                    position: { top: 20, left: 50 },
-                    dimensions: { height: 200, width: 300 },
-                    visible: true,
-                },
-                {
-                    name: 'terminal',
-                    position: { top: 500, left: 100 },
-                    dimensions: { height: 200, width: 300 },
-                    visible: true,
-                },
-                {
-                    name: 'todo',
-                    position: { top: 420, left: 900 },
-                    dimensions: { height: 220, width: 500 },
-                    visible: false,
-                },
-                {
-                    name: 'weather',
-                    position: { top: 20, left: 900 },
-                    dimensions: { height: 250, width: 300 },
-                    visible: false,
-                }
-            ],
-            city: "",
-            windowState: "floating",
-            numCols: 1,
-        },
+        config: getDefaultConfig,
     },
     mutations: {
         CONFIGURATION(state, payload) {
@@ -65,11 +68,22 @@ const store = new Vuex.Store({
     },
     actions: {
         loadConfig({ commit }) {
-            var config = JSON.parse(window.localStorage.getItem("config"));
-            if (!config) return;
+            console.log('loading config')
+            let config;
+            try {
+                config = JSON.parse(window.localStorage.getItem("config"));
+                console.log('loaded config')
+            } catch (e) {
+                console.log('invalid config, loading default');
+            }
+
+            if (!config) {
+                config = getDefaultConfig();
+            };
             commit('CONFIGURATION', config);
         },
         loadFileTree({ commit }) {
+            console.log('loading file system')
             let json_obj = JSON.parse(window.localStorage.getItem("root"));
             let tree = new FileSystem(json_obj);
             commit('FILE_TREE', tree);
@@ -78,12 +92,12 @@ const store = new Vuex.Store({
         updateConfig({ commit }, config) {
             commit('CONFIGURATION', config);
         },
-        updateFileTree({commit}, fileTree) {
+        updateFileTree({ commit }, fileTree) {
             commit('FILE_TREE', fileTree);
         },
-        updateWorkingDirectory({commit}, wd) {
+        updateWorkingDirectory({ commit }, wd) {
             commit('WORKING_DIRECTORY', wd);
-        },     
+        },
         setCity({ commit }, city) {
             commit('CITY', city);
         },

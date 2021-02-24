@@ -1,9 +1,14 @@
 <template>
   <div id="app" :class="$store.state.config.windowState">
-    <window
+    <Window
       v-for="app in $store.state.config.apps.filter((a) => a.visible)"
       :key="app.name"
+      :id="app.name"
       :style="getPositionStyle(app)"
+      :draggable="config.windowState === 'floating'"
+      :name="app.name"
+      v-on:input="setDrag"
+      v-on:dragEnd="dragEnd"
     >
       <div slot="application" class="application-wrapper">
         <filemanager
@@ -14,15 +19,10 @@
         <weather class="application" v-if="app.name === 'weather'" />
         <todo class="application" v-if="app.name === 'todo'"> </todo>
       </div>
-    </window>
-    <!--
-    <settingsIcon
-      id="settingsIcon"
-      ref="settingsIcon"
-    ></settingsIcon>
-    <settings
-    ></settings>
-    -->
+    </Window>
+
+    <settingsIcon id="settingsIcon" ref="settingsIcon"></settingsIcon>
+    <settings></settings>
   </div>
 </template>
 
@@ -31,15 +31,15 @@ import terminal from "./components/terminal/terminal";
 import filemanager from "./components/filemanager/filemanager";
 import weather from "./components/widgets/weather";
 import todo from "./components/widgets/todo";
-import window from "./components/widgets/window";
+import Window from "./components/widgets/window";
 import settings from "./components/settings/settings";
 import settingsIcon from "./components/settings/settingsIcon";
-import { log } from "./components/logger";
 
 export default {
   name: "app",
   data() {
     return {
+      config: {},
       settingsOpen: false,
       drag: { left: 0, top: 0, component: "" },
       clickPos: { x: 0, y: 0 },
@@ -53,45 +53,48 @@ export default {
     settingsIcon,
     weather,
     todo,
-    window,
+    Window,
   },
   created: async function () {
     await this.$store.dispatch("loadConfig");
+    this.config = this.$store.state.config;
     await this.$store.dispatch("loadFileTree");
-    console.log(this.$store.state.config.apps.filter(a => a.visible));
+    console.log(this.$store.state.config.apps.filter((a) => a.visible));
   },
+  computed: {},
   mounted: function () {},
   watch: {
     drag: function (drag) {
-      if (this.config.state != "floating") return;
+      if (this.config.windowState != "floating") return;
       if (drag.type == "resize") {
-        this.config.appPositions[drag.component].width += drag.left;
-        this.config.appPositions[drag.component].height += drag.top;
-        $(`#${drag.component}`).css(
-          "width",
-          this.config.appPositions[drag.component].width
-        );
-        $(`#${drag.component}`).css(
-          "height",
-          this.config.appPositions[drag.component].height
-        );
+        let app = this.config.apps.find((a) => a.name === drag.component);
+        app.dimensions.width += drag.left;
+        app.dimensions.height += drag.top;
+        $(`#${drag.component}`).css("width", app.dimensions.width);
+        $(`#${drag.component}`).css("height", app.dimensions.height);
       } else {
+        console.log("updating position for: " + drag.component);
+        let app = this.config.apps.find((a) => a.name === drag.component);
         var prevOffset = $(`#${drag.component}`).offset();
-
-        this.config.appPositions[drag.component].left = Math.max(
-          0,
-          prevOffset.left + drag.left
+        let new_x = Math.min(
+          Math.max(0, prevOffset.left + drag.left),
+          window.innerWidth - app.dimensions.width
         );
-        this.config.appPositions[drag.component].top = Math.max(
-          0,
-          prevOffset.top + drag.top
+        let new_y = Math.min(
+          Math.max(0, prevOffset.top + drag.top),
+          window.innerHeight - app.dimensions.height
         );
+        app.position = {
+          top: new_y,
+          left: new_x,
+        };
+        //this.config.apps.find()[drag.component].left =
+        //his.config.appPositions[drag.component].top =
         $(`#${drag.component}`).offset({
-          left: this.config.appPositions[drag.component].left,
-          top: this.config.appPositions[drag.component].top,
+          left: new_x,
+          top: new_y,
         });
       }
-      this.storeConfig();
     },
   },
   methods: {
@@ -100,6 +103,13 @@ export default {
     },
     setClickPos: function (pos) {
       this.clickPos = pos;
+    },
+    setDrag(drag) {
+      console.log(drag);
+      this.drag = drag;
+    },
+    dragEnd() {
+      this.$store.dispatch("updateConfig", this.config);
     },
   },
 };

@@ -90,6 +90,10 @@ university, some project, whatever). You can color-code the tags by clicking on 
 
 The wheel on the bottom right of the page opens the settings. you can select which applications you would like to have open upon startup as well as your preferred state of the window manager. You can also set your city for the weather applet and configure the colors, wallpaper, and window decorations to your likings!
 
+The background image option needs to be a valid url of an image in oder to work. 
+The colors currently only support hex values
+The opacity needs to be a value from 0 to 1. 
+
 ### Active TODO list
 
 - implement filetree widget

@@ -5,7 +5,7 @@
 
 # Live version
 
-https://cbrasser.github.io/
+I'll be pushing a new live version very soon!
 
 ## Functionality
 
@@ -29,6 +29,8 @@ In the floating layout, you can drag the windows around by holding 'ctrl' on you
 - right click: change window size
 
  window locations and dimensions are stored in the config and should be persistent upon refreshing the page. This way you can arrange your windows in a way that you like.
+ 
+Note: The window locations are absolute. Meaning that if you place a window on, e.g., the bottom-right corner on a big screen and then resize your screen the window might be out of the visible area. I might improve this with some additional checks later on.
 
 
 ## Available programs
@@ -84,7 +86,7 @@ university, some project, whatever). You can color-code the tags by clicking on 
 
 ### Settings
 
-The wheel on the bottom left of the page opens the settings. you can select which applications you would like to have open upon startup as well as your preferred state of the window manager.
+The wheel on the bottom right of the page opens the settings. you can select which applications you would like to have open upon startup as well as your preferred state of the window manager.
 
 ### Active TODO list
 

@@ -4,7 +4,7 @@ import { FileSystem } from '../util/filesystem/filesystem';
 
 Vue.use(Vuex);
 
-const getDefaultConfig = () => {
+export const getDefaultConfig = () => {
     return {
         apps: [
             {
@@ -32,8 +32,18 @@ const getDefaultConfig = () => {
                 visible: false,
             }
         ],
-        city: "",
+        city: "Zurich",
         windowState: "floating",
+        windowBorders: false,
+        backgroundImage: "",
+        colors: {
+            fg: '#d8dee9',
+            bg: '#1a1e21',
+            accent_1: '#8fbcbb',
+            accent_2: '#bf616a',
+            accent_3: '#ebcb8b',
+        },
+        opacity: 1,
         numCols: 1,
     };
 }

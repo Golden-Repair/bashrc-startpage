@@ -44,8 +44,8 @@ export default {
     0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
   font-size: 1rem;
   padding: 1rem;
-  background-color: var(--dark);
-  color: var(--white);
+  background-color: var(--bg);
+  color: var(--fg);
   align-items: center;
   transition: 0.3s ease-in-out;
 }

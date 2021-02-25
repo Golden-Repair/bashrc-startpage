@@ -1,39 +1,59 @@
 <template>
-  <div id="app" :class="$store.state.config.windowState">
-    <Window
-      v-for="app in $store.state.config.apps.filter((a) => a.visible)"
-      :key="app.name"
-      :id="app.name"
-      :style="getPositionStyle(app)"
-      :draggable="config.windowState === 'floating'"
-      :name="app.name"
-      v-on:input="setDrag"
-      v-on:dragEnd="dragEnd"
-    >
-      <div slot="application" class="application-wrapper">
-        <filemanager
-          class="application"
-          v-if="app.name === 'filemanager'"
-        ></filemanager>
-        <terminal class="application" v-if="app.name === 'terminal'"></terminal>
-        <weather
-          :city="config.city"
-          class="application"
-          v-if="app.name === 'weather'"
-        />
-        <todo class="application" v-if="app.name === 'todo'"> </todo>
-      </div>
-    </Window>
+  <div id="app" :style="userStyle">
+    <div id="screen" :class="$store.state.config.windowState">
+      <vue-resizable
+        :dragSelector="'.drag-bar'"
+        :width="app.dimensions.width"
+        :height="app.dimensions.height"
+        :left="app.position.left"
+        :top="app.position.top"
+        v-for="app in this.config.apps.filter((a) => a.visible)"
+        :key="app.name"
+        :handlers="['r', 'rb', 'b', 'lb', 'l', 'lt', 't', 'rt']"
+        @resize:end="handleDragEnd(app.name, $event)"
+        @drag:end="handleDragEnd(app.name, $event)"
+      >
+        <Window
+          :id="app.name"
+          :ref="app.name"
+          :position="app.position"
+          :dimensions="app.dimensions"
+          :applicationName="app.name"
+          :draggable="config.windowState === 'floating'"
+          :name="app.name"
+          :class="{ border: config.windowBorders }"
+        >
+          <div slot="application" class="application-wrapper">
+            <filemanager
+              class="application"
+              v-if="app.name === 'filemanager'"
+            ></filemanager>
+            <terminal
+              class="application"
+              v-if="app.name === 'terminal'"
+            ></terminal>
+            <weather
+              :city="config.city"
+              class="application"
+              v-if="app.name === 'weather'"
+            />
+            <todo class="application" v-if="app.name === 'todo'"> </todo>
+          </div>
+        </Window>
+      </vue-resizable>
 
-    <settingsIcon
-      v-on:click="settingsOpen = !settingsOpen"
-      :open="settingsOpen"
-    ></settingsIcon>
-    <settings :open="settingsOpen"> </settings>
+      <settingsIcon
+        v-on:click="settingsOpen = !settingsOpen"
+        :open="settingsOpen"
+      ></settingsIcon>
+      <settings :open="settingsOpen"> </settings>
+    </div>
   </div>
 </template>
 
 <script>
+import VueResizable from "vue-resizable";
+
 import terminal from "./components/terminal/terminal";
 import filemanager from "./components/filemanager/filemanager";
 import weather from "./components/widgets/weather";
@@ -46,15 +66,31 @@ export default {
   name: "app",
   data() {
     return {
-      config: {},
+      config: {
+        apps: [],
+        city: "Zurich",
+        windowState: "floating",
+        windowBorders: false,
+        backgroundImage: "",
+        colors: {
+          fg: "#d8dee9",
+          bg: "#1a1e21",
+          accent_1: "#8fbcbb",
+          accent_2: "#bf616a",
+          accent_3: "#ebcb8b",
+        },
+        opacity: 1,
+        numCols: 1,
+      },
       settingsOpen: false,
-      drag: { left: 0, top: 0, component: "" },
       clickPos: { x: 0, y: 0 },
       settingsOpen: false,
     };
   },
   props: {},
   components: {
+    VueResizable,
+
     terminal,
     filemanager,
     settings,
@@ -66,56 +102,73 @@ export default {
   created: async function () {
     await this.$store.dispatch("loadConfig");
     this.config = this.$store.state.config;
+    this.config.apps.forEach((app) => {
+      app.position.left = Math.min(
+        Math.max(0, app.position.left),
+        window.innerWidth - app.dimensions.width
+      );
+      app.position.top = Math.min(
+        Math.max(0, app.position.top),
+        window.innerHeight - app.dimensions.height
+      );
+    });
+    await this.$store.dispatch("updateConfig", this.config);
+    this.$root.$emit("configReady");
+
     await this.$store.dispatch("loadFileTree");
     console.log(this.$store.state.config.apps.filter((a) => a.visible));
   },
-  computed: {},
-  mounted: function () {},
-  watch: {
-    drag: function (drag) {
-      if (this.config.windowState != "floating") return;
-      if (drag.type == "resize") {
-        let app = this.config.apps.find((a) => a.name === drag.component);
-        app.dimensions.width += drag.left;
-        app.dimensions.height += drag.top;
-        $(`#${drag.component}`).css("width", app.dimensions.width);
-        $(`#${drag.component}`).css("height", app.dimensions.height);
-      } else {
-        let app = this.config.apps.find((a) => a.name === drag.component);
-        var prevOffset = $(`#${drag.component}`).offset();
-        let new_x = Math.min(
-          Math.max(0, prevOffset.left + drag.left),
-          window.innerWidth - app.dimensions.width
-        );
-        let new_y = Math.min(
-          Math.max(0, prevOffset.top + drag.top),
-          window.innerHeight - app.dimensions.height
-        );
-        app.position = {
-          top: new_y,
-          left: new_x,
-        };
-        //this.config.apps.find()[drag.component].left =
-        //his.config.appPositions[drag.component].top =
-        $(`#${drag.component}`).offset({
-          left: new_x,
-          top: new_y,
-        });
-      }
+  computed: {
+    userStyle() {
+      return this.config.colors
+        ? {
+            "--fg": this.config.colors.fg,
+            "--bg": this.config.colors.bg,
+            "--accent_1": this.config.colors.accent_1,
+            "--accent_2": this.config.colors.accent_2,
+            "--accent_3": this.config.colors.accent_3,
+            "--bg-opaque": this.buildRGBA(
+              this.config.colors.bg,
+              this.config.opacity
+            ),
+            "background-image": `url(${this.config.backgroundImage})`,
+          }
+        : {};
     },
   },
+  mounted: function () {},
+  watch: {
+    config() {},
+  },
   methods: {
-    getPositionStyle(app) {
-      return `top: ${app.position.top}px; left: ${app.position.left}px; height: ${app.dimensions.height}px; width: ${app.dimensions.width}px`;
+    hexToRgb(hex) {
+      let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
+        : null;
+    },
+    buildRGBA(hex, opacity) {
+      let rgb = this.hexToRgb(hex);
+      return `rgba(${rgb.r},${rgb.g},${rgb.b},${opacity})`;
+    },
+    handleDragEnd(appName, event) {
+      let app = this.config.apps.find((app) => app.name === appName);
+      app.position = {
+        top: event.top,
+        left: event.left,
+      };
+      app.dimensions = {
+        height: event.height,
+        width: event.width,
+      };
+      this.$store.dispatch("updateConfig", this.config);
     },
     setClickPos: function (pos) {
       this.clickPos = pos;
-    },
-    setDrag(drag) {
-      this.drag = drag;
-    },
-    dragEnd() {
-      this.$store.dispatch("updateConfig", this.config);
     },
   },
 };
@@ -123,16 +176,23 @@ export default {
 
 <style lang="scss">
 #app {
+  height: calc(100% - 2rem);
+  width: calc(100% - 2rem);
+  color: var(--fg);
+  padding: 1rem;
+}
+#screen {
   height: 100%;
   width: 100%;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: repeat(auto-fit, minmax(250px, 1fr));
 }
-#app.tiled {
+
+#screen.tiled {
   display: grid;
   grid-gap: 1rem;
 }
-#app.tiled .draggable {
+#screen.tiled .resizable-component {
   position: relative;
   top: unset !important;
   left: unset !important;
@@ -156,11 +216,6 @@ export default {
 
 .floating .draggable {
   position: absolute;
-}
-
-.draggable {
-  padding: 2rem;
-  background-color: var(--dark);
 }
 
 .fullscreen {

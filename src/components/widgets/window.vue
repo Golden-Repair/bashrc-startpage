@@ -1,78 +1,69 @@
 <template>
-  <div
-    class="draggable"
-    v-on:mousedown.left="dragStart"
-    v-on:mouseup.left="dragEnd"
-    @contextmenu.prevent.stop
-    v-on:mousedown.right="resizeStart"
-    v-on:mouseup.right="resizeEnd"
-    :class="draggable ? 'active' : 'inactive'"
-  >
-    <slot name="application"></slot>
+  <div class="draggable">
+    <div class="drag-bar"></div>
+    <div class="center">
+      <div class="drag-bar h"></div>
+      <div class="application">
+        <slot name="application"></slot>
+      </div>
+      <div class="drag-bar h"></div>
+    </div>
+
+    <div class="drag-bar"></div>
   </div>
 </template>
 
 <script>
 export default {
   name: "window",
+  components: {},
   data: function () {
     return {
       startX: 0,
       startY: 0,
+      updatedPosition: this.position,
+      updatedDimensions: this.dimensions,
     };
   },
   props: {
     draggable: Boolean,
+    dimensions: Object,
+    position: Object,
     name: String,
+    applicationName: String,
   },
-  watch: {},
-  methods: {
-    dragStart: function (e) {
-      if (!this.draggable || !e.ctrlKey) return;
-      this.startX = e.clientX;
-      this.startY = e.clientY;
-      //this.$emit("dragStart", { x: this.startX, y: this.startY });
-      window.onmousemove = (event) => {
-        this.$emit("input", {
-          left: event.movementX,
-          top: event.movementY,
-          component: this.name,
-          type: "drag",
-        });
-      };
-    },
-    dragEnd: function (e) {
-      if (!this.draggable) return;
-      this.$emit("dragEnd");
-      window.onmousemove = function (event) {};
-    },
-    resizeStart: function (e) {
-      if (!this.draggable || !e.ctrlKey) return;
-      this.startX = e.clientX;
-      this.startY = e.clientY;
-      //this.$emit("resizeStart", { x: this.startX, y: this.startY });
-      window.onmousemove = (event) => {
-        this.$emit("input", {
-          left: event.movementX,
-          top: event.movementY,
-          component: this.name,
-          type: "resize",
-        });
-      };
-    },
-    resizeEnd: function (e) {
-      if (!this.draggable) return;
-      window.onmousemove = function (event) {};
-    },
-  },
+  methods: {},
 };
 </script>
 
 <style>
-.inactive {
-  position: relative;
+.application {
+  width: calc(100% - 4rem);
+  height: 100%;
 }
 
 .active {
+}
+.drag-bar {
+  height: 2rem;
+  width: 100%;
+}
+.center {
+  display: flex;
+  height: calc(100% - 4rem);
+}
+.drag-bar.h {
+  width: 2rem;
+  height: 100%;
+}
+.draggable {
+  background-color: var(--bg-opaque);
+  transition: 0.3s ease-in-out;
+  width: calc(100%);
+  height: calc(100%);
+  box-sizing: border-box;
+}
+.draggable.border {
+  border: 3px solid var(--accent_1);
 }
 </style>

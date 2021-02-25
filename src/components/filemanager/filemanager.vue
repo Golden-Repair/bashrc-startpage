@@ -27,7 +27,7 @@
             selected: index == selected,
             marked: markedRemove.indexOf(index) != -1,
             directory: node.type == 'directory',
-            file: node.type == 'file'
+            file: node.type == 'file',
           }"
         >
           {{ node.name }}
@@ -46,9 +46,9 @@
       <div class="status-bar">
         <span class="position">{{ selected + 1 }}/{{ content.length }}</span>
         <span class="wd">{{ dirname }}</span>
-        <span class='filter'
-        v-if='filter.length > 0'
-        >filter: {{filter}}</span>
+        <span class="filter" v-if="filter.length > 0"
+          >filter: {{ filter }}</span
+        >
       </div>
     </div>
   </div>
@@ -59,37 +59,37 @@ import prompt from "./prompt";
 
 export default {
   name: "filemanager",
-  data: function() {
+  data: function () {
     return {
       selected: 0,
       promptActive: false,
       picked: "directory",
       type: "",
-      filter: '',
+      filter: "",
       placeholders: {
         touch: "filename url",
         mkdir: "name",
         search: "string",
-        cd: "directory"
+        cd: "directory",
       },
       input: "",
       modelCache: { type: "", name: "" },
-      markedRemove: []
+      markedRemove: [],
     };
   },
   components: {
-    prompt
+    prompt,
   },
   watch: {},
-  mounted: function() {
+  mounted: function () {
     this.$refs.filemanager.focus();
   },
   methods: {
-    open: function(url) {
+    open: function (url) {
       if (this.promptActive) return;
       window.open(url, "_blank");
     },
-    leave: function() {
+    leave: function () {
       if (this.promptActive) return;
       var res = this.fs.cd(this.wd, "..");
       if (res.directory) {
@@ -97,7 +97,7 @@ export default {
       }
       this.selected = 0;
     },
-    enter: function() {
+    enter: function () {
       if (this.promptActive) return;
       var node = this.content[this.selected];
       if (node.type == "directory") {
@@ -110,7 +110,7 @@ export default {
         window.open(node.url, "_blank");
       }
     },
-    enterClicked: function(node) {
+    enterClicked: function (node) {
       if (node.type == "directory") {
         var res = this.fs.cd(this.wd, node.name);
         if (res.directory) {
@@ -121,22 +121,21 @@ export default {
         window.open(node.url, "_blank");
       }
     },
-    down: function() {
+    down: function () {
       if (this.promptActive) return;
       this.selected = (this.selected + 1) % this.content.length;
     },
-    up: function() {
+    up: function () {
       if (this.promptActive) return;
       this.selected =
         this.selected > 0 ? this.selected - 1 : this.content.length - 1;
     },
-    onInput: function(type) {
-
-      if(this.promptActive) return;
+    onInput: function (type) {
+      if (this.promptActive) return;
       this.type = type;
       this.promptActive = true;
     },
-    remove: function() {
+    remove: function () {
       if (this.promptActive) return;
 
       if (this.markedRemove.indexOf(this.selected) == -1) {
@@ -145,12 +144,12 @@ export default {
         this.markedRemove.splice(this.markedRemove.indexOf(this.selected), 1);
       }
     },
-    cancel: function() {
+    cancel: function () {
       this.promptActive = false;
-      this.filter = ''
+      this.filter = "";
       this.$refs.filemanager.focus();
     },
-    paste: function() {
+    paste: function () {
       for (var i = 0; i < this.markedRemove.length; i++) {
         var index = this.markedRemove[i];
         var node = this.content[index];
@@ -163,7 +162,7 @@ export default {
       this.markedRemove = [];
       this.selected = 0;
     },
-    onSubmit: function(value) {
+    onSubmit: function (value) {
       switch (this.type) {
         case "touch":
           this.fs.touch(this.wd, value.split(" "));
@@ -172,22 +171,20 @@ export default {
           this.fs.mkdir(this.wd, value);
           break;
         case "search":
-          this.filter = value
+          this.filter = value;
           break;
         case "cd":
-        var node = this.content.filter(n => n.name == value)[0];
-        this.enterClicked(node);
+          var node = this.content.filter((n) => n.name == value)[0];
+          this.enterClicked(node);
           break;
       }
-      this.type = ''
+      this.type = "";
       this.promptActive = false;
       this.$refs.filemanager.focus();
-
-
     },
-    nextStage: function() {
+    nextStage: function () {
       this.dialogStage += 1;
-    }
+    },
   },
   computed: {
     fs() {
@@ -196,47 +193,42 @@ export default {
     wd() {
       return this.$store.state.workingDirectory;
     },
-    content: function() {
+    content: function () {
       var content = [];
       if (!this.wd || !this.wd.getChildren()) {
         return content;
       }
       content = content.concat(
-        this.wd.getChildren().map(c => ({
+        this.wd.getChildren().map((c) => ({
           name: c.getName(),
-          type: "directory"
+          type: "directory",
         }))
       );
       content = content.concat(
-        this.wd.getFiles().map(f => ({
+        this.wd.getFiles().map((f) => ({
           name: f.getName(),
           type: "file",
-          url: f.getUrl()
+          url: f.getUrl(),
         }))
       );
       if (this.filter.length > 0) {
-        return content.filter(n => n.name.indexOf(this.filter) != -1)
+        return content.filter((n) => n.name.indexOf(this.filter) != -1);
       }
       return content;
     },
-    dirname: function() {
+    dirname: function () {
       if (!this.wd || !this.wd.getPath()) {
         return "";
       }
       return this.wd.getPath();
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style>
 #arrow-capture {
   display: none;
-}
-
-#filemanager {
-  background-color: var(--dark);
-  opacity: 0.95;
 }
 
 .wrapper {
@@ -266,7 +258,7 @@ ul {
   color: var(--dark);
 }
 .file.selected {
-    background-color: var(--yellow);
+  background-color: var(--yellow);
   color: var(--dark);
 }
 
@@ -282,7 +274,6 @@ ul {
 .filter {
   float: right;
 }
-
 
 .marked {
   background-color: var(--red);

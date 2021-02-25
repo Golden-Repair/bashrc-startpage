@@ -44,7 +44,115 @@
     </div>
     <div class="settings-section">
       <span>City</span>
-      <input type="text" id="city" v-model="config.city" @input="setCity" />
+      <input
+        type="text"
+        id="city"
+        v-model="config.city"
+        @input="updateConfig"
+      />
+    </div>
+    <div class="settings-section">
+      <span>background image</span>
+      <input
+        type="text"
+        v-model="config.backgroundImage"
+        @input="updateConfig"
+      />
+    </div>
+    <div class="settings-section expand" :class="{ open: colorsOpen }">
+      <div class="expand-title" @click="colorsOpen = !colorsOpen">
+        <div class="title">colors</div>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="expand-content">
+        <div class="colors">
+          <div class="color">
+            <div class="color-name">Text</div>
+            <div
+              class="color-preview"
+              :style="{ backgroundColor: config.colors.fg }"
+            ></div>
+            <input
+              type="text"
+              v-model="config.colors.fg"
+              @input="updateConfig"
+            />
+          </div>
+          <div class="color">
+            <div class="color-name">Background</div>
+            <div
+              class="color-preview"
+              :style="{ backgroundColor: config.colors.bg }"
+            ></div>
+            <input
+              type="text"
+              v-model="config.colors.bg"
+              @input="updateConfig"
+            />
+          </div>
+          <div class="color">
+            <div class="color-name">Accent 1</div>
+            <div
+              class="color-preview"
+              :style="{ backgroundColor: config.colors.accent_1 }"
+            ></div>
+            <input
+              type="text"
+              v-model="config.colors.accent_1"
+              @input="updateConfig"
+            />
+          </div>
+          <div class="color">
+            <div class="color-name">Accent 2</div>
+            <div
+              class="color-preview"
+              :style="{ backgroundColor: config.colors.accent_2 }"
+            ></div>
+            <input
+              type="text"
+              v-model="config.colors.accent_2"
+              @input="updateConfig"
+            />
+          </div>
+          <div class="color">
+            <div class="color-name">Accent 3</div>
+            <div
+              class="color-preview"
+              :style="{ backgroundColor: config.colors.accent_3 }"
+            ></div>
+            <input
+              type="text"
+              v-model="config.colors.accent_3"
+              @input="updateConfig"
+            />
+          </div>
+        </div>
+        <div class="opacity"></div>
+        <div class="background"></div>
+        <div class="window-borders"></div>
+      </div>
+    </div>
+    <div class="settings-section expand" :class="{ open: windowsOpen }">
+      <div class="expand-title" @click="windowsOpen = !windowsOpen">
+        <div class="title">windows</div>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="expand-content">
+        <div class="settings-section toggle">
+          <div class="label">borders</div>
+          <div
+            class="layout-toggle"
+            @click="toggleBorders"
+            :class="{ active: config.windowBorders }"
+          >
+            <div class="toggle-button"></div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <span>opacity</span>
+          <input type="text" v-model="config.opacity" @input="updateConfig" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -55,6 +163,8 @@ export default {
   data: function () {
     return {
       config: {},
+      colorsOpen: false,
+      windowsOpen: false,
       activeTab: "submenu-view",
     };
   },
@@ -75,13 +185,17 @@ export default {
     },
   },
   methods: {
+    toggleBorders() {
+      this.config.windowBorders = !this.config.windowBorders;
+      this.$store.dispatch("updateConfig", this.config);
+    },
     toggleLayout() {
       this.config.windowState === "floating"
         ? (this.config.windowState = "tiled")
         : (this.config.windowState = "floating");
       this.$store.dispatch("updateConfig", this.config);
     },
-    setCity() {
+    updateConfig() {
       this.$store.dispatch("updateConfig", this.config);
     },
     toggleApp(name) {
@@ -117,11 +231,55 @@ export default {
 </script>
 
 <style>
+.expand-content h3 {
+  font-size: 18px;
+  margin-bottom: 4px;
+  margin-top: 4px;
+}
+.colors {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.color {
+  width: max-content;
+  padding: 4px;
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2),
+    0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+}
+.color-name {
+  font-size: 16px;
+}
+.color input {
+  width: 80px;
+}
+.color span {
+  font-size: 14px;
+}
+.color-preview {
+  height: 30px;
+  width: 100%;
+}
+.expand.open .expand-content {
+  max-height: 400px;
+}
+.expand-title {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.expand-content {
+  max-height: 0;
+  transition: 0.3s ease-in-out;
+  overflow: hidden;
+}
 .layout-toggle {
   width: 40px;
   height: 20px;
   overflow: hidden;
-  background-color: var(--dark);
+  background-color: var(--bg);
   border-radius: 10px;
   cursor: pointer;
   transition: 0.5s ease-in-out;
@@ -129,18 +287,18 @@ export default {
     0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
 }
 .layout-toggle.active {
-  background-color: var(--white);
+  background-color: var(--fg);
 }
 .toggle-button {
   width: 20px;
   height: 20px;
-  background-color: var(--red);
+  background-color: var(--accent_1);
   border-radius: 50%;
   transition: 0.3s ease-in-out;
 }
 .layout-toggle.active .toggle-button {
   transform: translateX(100%);
-  background-color: var(--green);
+  background-color: var(--accent_2);
 }
 .apps {
   display: flex;
@@ -155,27 +313,29 @@ export default {
   border-radius: 50%;
   width: 25px;
   height: 25px;
-  background-color: var(--white);
+  background-color: var(--fg);
   transition: 0.3s ease-in-out;
 }
 .app-icon i {
   transition: 0.3s ease-in-out;
-  color: var(--red);
+  color: var(--accent_2);
 }
 .app-icon.active {
-  background-color: var(--green);
+  background-color: var(--accent_1);
 }
 .app-icon.active i {
-  color: var(--white);
+  color: var(--fg);
 }
 
 .settings-wrapper {
+  z-index: 99;
   padding: 1rem;
   border-radius: 12px;
-  background-color: var(--dark);
+  background-color: var(--bg);
   position: absolute;
-  right: 0;
-  transform: translateX(100%);
+  right: 20px;
+  top: 20px;
+  transform: translateX(calc(100% + 20px));
   transition: 0.3s ease-in-out;
   display: grid;
 }
@@ -198,9 +358,9 @@ export default {
 }
 
 input {
-  background-color: var(--dark);
+  background-color: var(--bg);
   border: none;
   margin-left: 0;
-  color: var(--white);
+  color: var(--fg);
 }
 </style>

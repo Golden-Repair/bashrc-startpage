@@ -1,223 +1,206 @@
 <template>
-  <div class="settings-wrapper">
-    <div class="tab">
-      <button
-        id="button-view"
-        v-on:click="openTab('submenu-view')"
-        class="tablinks tab-active"
-      >
-        View
-      </button>
-      <button
-        id="button-term"
-        v-on:click="openTab('submenu-term')"
-        class="tablinks"
-      >
-        Terminal
-      </button>
-      <button
-        id="button-fm"
-        v-on:click="openTab('submenu-fm')"
-        class="tablinks"
-      >
-        File Manager
-      </button>
-      <button
-        id="button-weather"
-        v-on:click="openTab('submenu-weather')"
-        class="tablinks"
-      >
-        Weather
-      </button>
-      <button
-        id="button-colors"
-        v-on:click="openTab('submenu-colors')"
-        class="tablinks"
-      >
-        Colors
-      </button>
-    </div>
-    <div id="submenu-view" class="tabcontent">
-      <div class="row mb-2">
-        <div class="col">
-          <h3>Applications</h3>
-          <label>
-            <input
-              type="checkbox"
-              id="term"
-              value="term"
-              v-model="activeApps"
-            />
-            <span class="app-icon"><i class="fas fa-terminal"></i></span>
-          </label>
-          <label>
-            <input type="checkbox" id="fm" value="fm" v-model="activeApps" />
-            <span class="app-icon"><i class="far fa-hdd"></i></span>
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              id="weather"
-              value="weather"
-              v-model="activeApps"
-            />
-            <span class="app-icon"><i class="fas fa-smog"></i></span>
-          </label>
-           <label>
-            <input
-              type="checkbox"
-              id="todo"
-              value="todo"
-              v-model="activeApps"
-            />
-            <span class="app-icon"><i class="fas fa-clipboard-list"></i></span>
-          </label>
+  <div class="settings-wrapper" :class="{ open: open }">
+    <div id="submenu-view" class="settings-section">
+      <div class="apps">
+        <div
+          class="app-icon"
+          :class="{ active: terminalActive }"
+          @click="toggleApp('terminal')"
+        >
+          <i class="fas fa-terminal"></i>
         </div>
-        <div class="col">
-          <h3>Window Manager</h3>
-          <span>Floating</span>
-          <input type ='radio' id='floating' value='floating' v-model='wmState'>
-           <span>Tiled</span>
-          <input type ='radio' id='tiled' value='tiled' v-model='wmState'>
-          </div>
+        <div
+          class="app-icon"
+          :class="{ active: fmActive }"
+          @click="toggleApp('filemanager')"
+        >
+          <i class="far fa-hdd"></i>
+        </div>
+        <div
+          class="app-icon"
+          :class="{ active: weatherActive }"
+          @click="toggleApp('weather')"
+        >
+          <i class="fas fa-smog"></i>
+        </div>
+        <div
+          class="app-icon"
+          :class="{ active: todoActive }"
+          @click="toggleApp('todo')"
+        >
+          <i class="fas fa-clipboard-list"></i>
+        </div>
       </div>
     </div>
-    <div id="submenu-term" class="tab-content"></div>
-    <div id="submenu-fm" class="tab-content"></div>
-    <div id="submenu-weather" class="tab-content">
-      <span>City</span>
-      <input type="text" id="city" v-model="city" />
+    <div class="settings-section toggle">
+      <div class="label">tile</div>
+      <div
+        class="layout-toggle"
+        @click="toggleLayout"
+        :class="{ active: config.windowState === 'tiled' }"
+      >
+        <div class="toggle-button"></div>
+      </div>
     </div>
-    <div id="submenu-colors" class="tab-content"></div>
+    <div class="settings-section">
+      <span>City</span>
+      <input type="text" id="city" v-model="config.city" @input="setCity" />
+    </div>
   </div>
 </template>
 
 <script>
-import { log } from "../logger";
-
 export default {
   name: "settings",
-  data: function() {
+  data: function () {
     return {
-      city: "",
+      config: {},
       activeTab: "submenu-view",
     };
   },
   props: {
-          activeApps: Array,
-          wmState: String,
-
+    activeApps: Array,
+    wmState: String,
+    open: Boolean,
+  },
+  created() {
+    this.config = this.$store.state.config;
   },
   watch: {
-    activeTab: function(newActive, prevActive) {
-      $(`#${prevActive}`).toggle();
-      $(`#${newActive}`).toggle();
-      $(
-        `#button-${prevActive.substr(prevActive.indexOf("-") + 1)}`
-      ).toggleClass("tab-active");
-      $(`#button-${newActive.substr(newActive.indexOf("-") + 1)}`).toggleClass(
-        "tab-active"
-      );
+    wmState: function (newState, oldState) {
+      this.$emit("stateChanged", newState);
     },
-    activeApps: function(newList, oldList) {
-      this.$emit("appsChanged", newList);
+    city: function (newCity, oldCity) {
+      this.$emit("cityChanged", newCity);
     },
-    wmState: function(newState, oldState) {
-      this.$emit('stateChanged', newState)
-    },
-    city: function(newCity, oldCity) {
-      this.$emit('cityChanged', newCity)
-    }
   },
   methods: {
-    openTab: function(value) {
+    toggleLayout() {
+      this.config.windowState === "floating"
+        ? (this.config.windowState = "tiled")
+        : (this.config.windowState = "floating");
+      this.$store.dispatch("updateConfig", this.config);
+    },
+    setCity() {
+      this.$store.dispatch("updateConfig", this.config);
+    },
+    toggleApp(name) {
+      let app = this.config.apps.find((a) => a.name === name);
+      app.visible = !app.visible;
+      this.$store.dispatch("updateConfig", this.config);
+    },
+    openTab: function (value) {
       this.activeTab = value;
     },
-    updateTerminal: function(value) {
-    },
-    updateFm: function(value) {
-    }
+    updateTerminal: function (value) {},
+    updateFm: function (value) {},
   },
-  computed: {}
+  computed: {
+    terminalActive() {
+      return this.$store.state.config.apps.find((a) => a.name === "terminal")
+        .visible;
+    },
+    fmActive() {
+      return this.$store.state.config.apps.find((a) => a.name === "filemanager")
+        .visible;
+    },
+    weatherActive() {
+      return this.$store.state.config.apps.find((a) => a.name === "weather")
+        .visible;
+    },
+    todoActive() {
+      return this.$store.state.config.apps.find((a) => a.name === "todo")
+        .visible;
+    },
+  },
 };
 </script>
 
 <style>
-.mb-2 {
-  margin-bottom: 2rem;
+.layout-toggle {
+  width: 40px;
+  height: 20px;
+  overflow: hidden;
+  background-color: var(--dark);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.5s ease-in-out;
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2),
+    0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
 }
-.mb-0 {
-  margin-bottom: 0;
+.layout-toggle.active {
+  background-color: var(--white);
 }
-.m-0 {
-  margin-left: 0;
-  margin-right: 0;
+.toggle-button {
+  width: 20px;
+  height: 20px;
+  background-color: var(--red);
+  border-radius: 50%;
+  transition: 0.3s ease-in-out;
 }
-
-input[type="checkbox"] {
-  display: none;
+.layout-toggle.active .toggle-button {
+  transform: translateX(100%);
+  background-color: var(--green);
 }
-
+.apps {
+  display: flex;
+}
 .app-icon {
-  margin-right: 1rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border-radius: 5px;
+  margin-right: 8px;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  background-color: var(--white);
+  transition: 0.3s ease-in-out;
 }
-
 .app-icon i {
+  transition: 0.3s ease-in-out;
   color: var(--red);
 }
-[type="checkbox"]:checked + .app-icon i {
-  color: var(--green);
+.app-icon.active {
+  background-color: var(--green);
+}
+.app-icon.active i {
+  color: var(--white);
 }
 
 .settings-wrapper {
   padding: 1rem;
-  width: 100%;
+  border-radius: 12px;
   background-color: var(--dark);
+  position: absolute;
+  right: 0;
+  transform: translateX(100%);
+  transition: 0.3s ease-in-out;
+  display: grid;
 }
-
-.tab {
-  overflow: hidden;
-  background-color: var(--dark);
-  margin-bottom: 1rem;
+.settings-section {
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2),
+    0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
 }
-
-.tab button {
-  background-color: inherit;
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 14px 16px;
-  transition: 0.3s;
-  font-size: 17px;
-  border-bottom: 1px solid var(--cyan);
+.settings-section .label {
   margin-right: 1rem;
 }
-
-.tab button:hover {
-  background-color: #ddd;
+.settings-section.toggle {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.settings-wrapper.open {
+  transform: translateX(0);
 }
 
-.tab button.active {
-  background-color: #ccc;
-}
-
-.tab-active {
-  display: block;
-  border-bottom: 1px solid var(--yellow) !important;
-}
-
-.tab-content {
-  display: none;
-}
-
-#submenu-weather input {
-      background-color: var(--dark);
-    border: none;
-    margin-left: 0;
-    color: var(--white);
+input {
+  background-color: var(--dark);
+  border: none;
+  margin-left: 0;
+  color: var(--white);
 }
 </style>

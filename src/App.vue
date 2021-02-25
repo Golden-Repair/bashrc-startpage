@@ -16,13 +16,20 @@
           v-if="app.name === 'filemanager'"
         ></filemanager>
         <terminal class="application" v-if="app.name === 'terminal'"></terminal>
-        <weather class="application" v-if="app.name === 'weather'" />
+        <weather
+          :city="config.city"
+          class="application"
+          v-if="app.name === 'weather'"
+        />
         <todo class="application" v-if="app.name === 'todo'"> </todo>
       </div>
     </Window>
 
-    <settingsIcon id="settingsIcon" ref="settingsIcon"></settingsIcon>
-    <settings></settings>
+    <settingsIcon
+      v-on:click="settingsOpen = !settingsOpen"
+      :open="settingsOpen"
+    ></settingsIcon>
+    <settings :open="settingsOpen"> </settings>
   </div>
 </template>
 
@@ -43,6 +50,7 @@ export default {
       settingsOpen: false,
       drag: { left: 0, top: 0, component: "" },
       clickPos: { x: 0, y: 0 },
+      settingsOpen: false,
     };
   },
   props: {},
@@ -73,7 +81,6 @@ export default {
         $(`#${drag.component}`).css("width", app.dimensions.width);
         $(`#${drag.component}`).css("height", app.dimensions.height);
       } else {
-        console.log("updating position for: " + drag.component);
         let app = this.config.apps.find((a) => a.name === drag.component);
         var prevOffset = $(`#${drag.component}`).offset();
         let new_x = Math.min(
@@ -105,7 +112,6 @@ export default {
       this.clickPos = pos;
     },
     setDrag(drag) {
-      console.log(drag);
       this.drag = drag;
     },
     dragEnd() {
@@ -117,9 +123,21 @@ export default {
 
 <style lang="scss">
 #app {
-  flex-grow: 1;
-  margin: 1rem;
-  grid-template-rows: repeat(auto-fit, minmax(400px, 1fr));
+  height: 100%;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(auto-fit, minmax(250px, 1fr));
+}
+#app.tiled {
+  display: grid;
+  grid-gap: 1rem;
+}
+#app.tiled .draggable {
+  position: relative;
+  top: unset !important;
+  left: unset !important;
+  width: unset !important;
+  height: unset !important;
 }
 
 *:focus {
@@ -141,41 +159,12 @@ export default {
 }
 
 .draggable {
-  padding: 5rem;
+  padding: 2rem;
   background-color: var(--dark);
 }
 
 .fullscreen {
   height: 100%;
   width: 100%;
-}
-
-.tiled {
-  display: grid;
-  grid-gap: 1rem;
-}
-
-#settingsIcon {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  display: flex;
-  transition: 1s ease-in-out;
-  z-index: 1;
-}
-
-#settingsIcon i {
-  transition: 0.1s ease-in;
-}
-
-.open i {
-  transform: rotate(360deg);
-}
-
-#settings {
-  display: none;
-  position: absolute;
-  bottom: 0;
-  left: 0;
 }
 </style>

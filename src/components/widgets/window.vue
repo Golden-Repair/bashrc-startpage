@@ -29,12 +29,10 @@ export default {
   methods: {
     dragStart: function (e) {
       if (!this.draggable || !e.ctrlKey) return;
-      console.log("started dragging");
       this.startX = e.clientX;
       this.startY = e.clientY;
       //this.$emit("dragStart", { x: this.startX, y: this.startY });
       window.onmousemove = (event) => {
-        console.log(event.movementX);
         this.$emit("input", {
           left: event.movementX,
           top: event.movementY,

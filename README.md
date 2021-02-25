@@ -7,6 +7,13 @@
 
 I'll be pushing a new live version very soon!
 
+## Open issues
+ - color configuration
+ - window opacity configuration
+ - shortcuts for 'quitting' and opening applications
+ - percent-based window arrangement
+
+
 ## Functionality
 
 The basic principle of this startpage is to act as a bookmark repository.

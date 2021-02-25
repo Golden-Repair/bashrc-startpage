@@ -1,17 +1,14 @@
 
 # BASHRC
 
-![demo](https://github.com/cbrasser/bashrc/blob/master/demo_screen_new.png)
+![demo](https://github.com/cbrasser/bashrc/blob/master/demo_screen_newer.png)
 
 # Live version
 
 I'll be pushing a new live version very soon!
 
 ## Open issues
- - color configuration
- - window opacity configuration
  - shortcuts for 'quitting' and opening applications
- - percent-based window arrangement
 
 
 ## Functionality
@@ -31,13 +28,11 @@ windows are arranged automatically to fill all available space (with sexy gaps, 
 
 ### Floating
 
-In the floating layout, you can drag the windows around by holding 'ctrl' on your keyboard and dragging the window.
-- left click: move window position
-- right click: change window size
+In the floating layout, you can arrange the windows by dragging and resizing them on their side borders.
 
  window locations and dimensions are stored in the config and should be persistent upon refreshing the page. This way you can arrange your windows in a way that you like.
  
-Note: The window locations are absolute. Meaning that if you place a window on, e.g., the bottom-right corner on a big screen and then resize your screen the window might be out of the visible area. I might improve this with some additional checks later on.
+Note: The window locations are absolute. Meaning that if you place a window on, e.g., the bottom-right corner on a big screen and then resize your screen the window might be out of the visible area. There are some checks to bring them back upon refreshing the page, but i did not test this too much :)
 
 
 ## Available programs
@@ -93,15 +88,11 @@ university, some project, whatever). You can color-code the tags by clicking on 
 
 ### Settings
 
-The wheel on the bottom right of the page opens the settings. you can select which applications you would like to have open upon startup as well as your preferred state of the window manager.
+The wheel on the bottom right of the page opens the settings. you can select which applications you would like to have open upon startup as well as your preferred state of the window manager. You can also set your city for the weather applet and configure the colors, wallpaper, and window decorations to your likings!
 
 ### Active TODO list
 
-current todos, each with priority in parenthesis
-
-- implement filetree widget (9)
-- implement colorscheme framework (3)
-- implement colorscheme selection & generation (4)
+- implement filetree widget
 
 ### General remarks
 
